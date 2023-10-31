@@ -12,11 +12,11 @@ def get_cell_features_xls(cur_cell, row_idx, col_idx, sheet, book):
         "coordinate": get_column_letter(col_idx + 1) + str(row_idx + 1),
         "is_empty": cur_cell.ctype == xlrd.XL_CELL_EMPTY,
         "is_string": cur_cell.ctype == xlrd.XL_CELL_TEXT,
-        "is_merged": (cur_cell.row, cur_cell.col) in sheet.merged_cells,
         "is_bold": font.bold,
         "is_italic": font.italic,
         "formula": cur_cell.ctype == xlrd.XL_CELL_FORMULA,
         # Some features might not have a direct equivalent in xlrd, so they are approximated or left out
+        "is_merged": False,
         "left_border": False,
         "right_border": False,
         "top_border": False,
