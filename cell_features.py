@@ -21,15 +21,6 @@ def get_cell_contents_row(cur_cell):
     cell_features["top_border"] = cur_cell.border.top is not None
     cell_features["bottom_border"] = cur_cell.border.bottom is not None
 
-    #cell_features["left_border_medium"] = 1 if cur_cell.border.left == 'medium' else 0
-    #cell_features["left_border_double"] = 1 if cur_cell.border.left == 'double' else 0
-    #cell_features["right_border_medium"] = 1 if cur_cell.border.right == 'medium' else 0
-    #cell_features["right_border_double"] = 1 if cur_cell.border.right == 'double' else 0
-    #cell_features["top_border_medium"] = 1 if cur_cell.border.top == 'medium' else 0
-    #cell_features["top_border_double"] = 1 if cur_cell.border.top == 'double' else 0
-    #cell_features["bottom_border_medium"] = 1 if cur_cell.border.bottom == 'medium' else 0
-    #cell_features["bottom_border_double"] = 1 if cur_cell.border.bottom == 'double' else 0
-
     # fill
     cell_features["is_filled"] = cur_cell.fill.patternType is not None
 
