@@ -46,6 +46,24 @@ class DatasetLoader:
         shutil.unpack_archive(dataset_path, extract_path, '7zip')
         print(f"Dataset {dataset_name} unpacked successfully.")
         
+        # Cleanup: Delete the .7z file after unpacking
+        os.remove(dataset_path)
+        print(f"{dataset_name}.7z removed successfully.")
+        
     def get_dataset(self, dataset_name):
         self.download_dataset(dataset_name)
         self.unpack_dataset(dataset_name)
+
+    def get_files(self, dataset_name):
+        dataset_dir = os.path.join(self.save_path, dataset_name)
+
+        if not os.path.exists(dataset_dir):
+            print(f"Directory {dataset_dir} does not exist.")
+            return
+
+        for root, dirs, files in os.walk(dataset_dir):
+            for file in files:
+                yield {
+                    "file_name": file,
+                    "parent_path": os.path.relpath(root, dataset_dir)
+                }
