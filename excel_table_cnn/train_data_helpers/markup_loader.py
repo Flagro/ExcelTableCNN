@@ -10,18 +10,17 @@ class MarkupLoader:
     def get_markup(self, markup_name):
         if markup_name == "tablesense":
             response = requests.get(self.tablesense_url)
-            data = response.content.decode('utf-8')
+            lines = response.content.decode('utf-8').splitlines()
             
-            # Load data into a pandas DataFrame
-            df = pd.read_csv(io.StringIO(data), sep='\t', header=None)
-            
-            # Process the DataFrame to combine table_range values into a list
+            # Process each line to split on tab and organize data
             processed_data = []
-            for _, row in df.iterrows():
-                # The first 4 columns are file_name, sheet_name, set_type, and parent_path
-                file_name, sheet_name, set_type, parent_path = row[:4]
-                # All remaining columns are table_range values
-                table_ranges = row[4:].dropna().tolist()
+            for line in lines:
+                fields = line.split('\t')
+                
+                # The first 4 fields are file_name, sheet_name, set_type, and parent_path
+                file_name, sheet_name, set_type, parent_path = fields[:4]
+                # All remaining fields are table_range values
+                table_ranges = fields[4:]
                 processed_data.append([file_name, sheet_name, set_type, parent_path, table_ranges])
             
             # Convert the processed data into a DataFrame
