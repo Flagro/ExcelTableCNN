@@ -9,7 +9,7 @@ def get_cell_features_xls(cur_cell, row_idx, col_idx, sheet, book):
     font = book.font_list[xf.font_index]
     
     cell_features = {
-        "coordinate": get_column_letter(col_idx) + str(row_idx),
+        "coordinate": get_column_letter(col_idx + 1) + str(row_idx + 1),
         "is_empty": cur_cell.ctype == xlrd.XL_CELL_EMPTY,
         "is_string": cur_cell.ctype == xlrd.XL_CELL_TEXT,
         "is_merged": (cur_cell.row, cur_cell.col) in sheet.merged_cells,
