@@ -14,8 +14,8 @@ def get_cell_features_xls(cur_cell, row_idx, col_idx, sheet, book):
         "is_string": cur_cell.ctype == xlrd.XL_CELL_TEXT,
         "is_bold": font.bold,
         "is_italic": font.italic,
-        "formula": cur_cell.ctype == xlrd.XL_CELL_FORMULA,
         # Some features might not have a direct equivalent in xlrd, so they are approximated or left out
+        "formula": False,
         "is_merged": False,
         "left_border": False,
         "right_border": False,
