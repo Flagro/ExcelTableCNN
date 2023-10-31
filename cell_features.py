@@ -35,8 +35,6 @@ def get_cell_contents_row(cur_cell):
     cell_features["indent"] = cur_cell.alignment.indent != 0
     cell_features["formula"] = cur_cell.data_type == 'f'
 
-    #cell_features["text_rotation"] = cur_cell.alignment.textRotation == 17
-
     return cell_features
 
 
