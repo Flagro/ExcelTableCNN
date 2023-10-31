@@ -1,14 +1,15 @@
 import pandas as pd
 import xlrd
 import openpyxl
+from openpyxl.utils.cell import get_column_letter
 
 
-def get_cell_features_xls(cur_cell, sheet, book):
+def get_cell_features_xls(cur_cell, row_idx, col_idx, sheet, book):
     xf = book.xf_list[cur_cell.xf_index]
     font = book.font_list[xf.font_index]
     
     cell_features = {
-        "coordinate": (cur_cell.row, cur_cell.col),
+        "coordinate": get_column_letter(col_idx) + str(row_idx),
         "is_empty": cur_cell.ctype == xlrd.XL_CELL_EMPTY,
         "is_string": cur_cell.ctype == xlrd.XL_CELL_TEXT,
         "is_merged": (cur_cell.row, cur_cell.col) in sheet.merged_cells,
@@ -63,7 +64,7 @@ def get_table_features(file_path, sheet_name) -> pd.DataFrame:
         for row in range(ws.nrows):
             for col in range(ws.ncols):
                 cell = ws.cell(row, col)
-                data.append(get_cell_features_xls(cell, ws, wb))
+                data.append(get_cell_features_xls(cell, row, col, ws, wb))
     
     elif file_path.endswith('.xlsx'):
         wb = openpyxl.load_workbook(file_path, read_only=True)
