@@ -1,9 +1,8 @@
 import pandas as pd
-import numpy as np
-from openpyxl.utils import coordinate_to_tuple, get_column_letter
+import openpyxl
 
 
-def get_cell_contents_row(cur_cell):
+def get_cell_features(cur_cell):
     cell_features = {
         "coordinate": cur_cell.coordinate,
         "is_empty": cur_cell.value is None,
@@ -28,18 +27,14 @@ def get_cell_contents_row(cur_cell):
     return cell_features
 
 
-def get_cell_features(ws) -> pd.DataFrame:
-    """
-    На вход: адрес Excel файла (опционально адрес файла с разметкой зон)
-    На выход: таблица с характеристиками каждой непустой ячейки файла
-    Зачем: анализ hard values, умножения на ноль, использованных формул и т.д.
-    """
-
+def get_table_features(file_path, sheet_name) -> pd.DataFrame:
+    wb = openpyxl.load_workbook(file_path, read_only=True)
+    ws = wb[sheet_name]
     data = []
 
     for row in ws.iter_rows():
         for cell in row:
-            data.append(get_cell_contents_row(cell))
+            data.append(get_cell_features(cell))
 
     result_df = pd.DataFrame(data)
 
