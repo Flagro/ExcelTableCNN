@@ -4,36 +4,26 @@ from openpyxl.utils import coordinate_to_tuple, get_column_letter
 
 
 def get_cell_contents_row(cur_cell):
-    cell_features = dict()
-
-    cell_features["coordinate"] = cur_cell.coordinate
-
-    cell_features["is_empty"] = cur_cell.value is None
-    cell_features["is_string"] = cur_cell.data_type in ['s', 'str']
-
-    cell_features["is_merged"] = type(cur_cell).__name__ == 'MergedCell'
-    cell_features["is_bold"] = cur_cell.font.b
-    cell_features["is_italic"] = cur_cell.font.i
-
-    # border
-    cell_features["left_border"] = cur_cell.border.left is not None
-    cell_features["right_border"] = cur_cell.border.right is not None
-    cell_features["top_border"] = cur_cell.border.top is not None
-    cell_features["bottom_border"] = cur_cell.border.bottom is not None
-
-    # fill
-    cell_features["is_filled"] = cur_cell.fill.patternType is not None
-
-    # wrap и выравнивание по горизонтали
-    cell_features["horizontal_alignment"] = cur_cell.alignment.horizontal is not None
-    cell_features["left_horizontal_alignment"] = cur_cell.alignment.horizontal == 'left'
-    cell_features["right_horizontal_alignment"] = cur_cell.alignment.horizontal == 'right'
-    cell_features["center_horizontal_alignment"] = cur_cell.alignment.horizontal == 'center'
-
-    cell_features["wrapped_text"] = cur_cell.alignment.wrapText
-
-    cell_features["indent"] = cur_cell.alignment.indent != 0
-    cell_features["formula"] = cur_cell.data_type == 'f'
+    cell_features = {
+        "coordinate": cur_cell.coordinate,
+        "is_empty": cur_cell.value is None,
+        "is_string": cur_cell.data_type in ['s', 'str'],
+        "is_merged": type(cur_cell).__name__ == 'MergedCell',
+        "is_bold": cur_cell.font.b,
+        "is_italic": cur_cell.font.i,
+        "left_border": cur_cell.border.left is not None,
+        "right_border": cur_cell.border.right is not None,
+        "top_border": cur_cell.border.top is not None,
+        "bottom_border": cur_cell.border.bottom is not None,
+        "is_filled": cur_cell.fill.patternType is not None,
+        "horizontal_alignment": cur_cell.alignment.horizontal is not None,
+        "left_horizontal_alignment": cur_cell.alignment.horizontal == 'left',
+        "right_horizontal_alignment": cur_cell.alignment.horizontal == 'right',
+        "center_horizontal_alignment": cur_cell.alignment.horizontal == 'center',
+        "wrapped_text": cur_cell.alignment.wrapText,
+        "indent": cur_cell.alignment.indent != 0,
+        "formula": cur_cell.data_type == 'f'
+    }
 
     return cell_features
 
