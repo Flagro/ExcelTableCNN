@@ -41,8 +41,10 @@ class DatasetLoader:
             print(f"Dataset {dataset_name} not found at {dataset_path}.")
             return
         
-        # Register the .7z format with shutil
-        shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
+        # Register the .7z format with shutil, only if it's not already registered
+        if '7zip' not in shutil._UNPACK_FORMATS:
+            shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
+        
         shutil.unpack_archive(dataset_path, extract_path, '7zip')
         print(f"Dataset {dataset_name} unpacked successfully.")
         
