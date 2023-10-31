@@ -67,9 +67,10 @@ class DatasetLoader:
         result = []
         for root, dirs, files in os.walk(dataset_dir):
             for file in files:
+                relative_path = os.path.relpath(root, self.save_path)
                 result.append({
                     "file_name": file,
-                    "parent_path": os.path.relpath(root, dataset_dir)
+                    "parent_path": relative_path
                 })
 
         return pd.DataFrame(result)
