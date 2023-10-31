@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+import io
 
 class MarkupLoader:
     def __init__(self):
@@ -11,11 +12,11 @@ class MarkupLoader:
             response = requests.get(self.tablesense_url)
             data = response.content.decode('utf-8')
             
-            # Load data into a pandas DataFrame
+            # Load data into a pandas DataFrame using io.StringIO
             columns = ['file_name', 'sheet_name', 'set_type', 'parent_path', 'table_range']
-            df = pd.read_csv(pd.compat.StringIO(data), sep='\t', names=columns)
+            df = pd.read_csv(io.StringIO(data), sep='\t', names=columns)
             return df
-        
+            
         else:
             print(f"Markup {markup_name} not found.")
             return None
