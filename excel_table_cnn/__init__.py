@@ -1,3 +1,3 @@
-__all__ = ['cell_features.py', 'table_detector.py']
+__all__ = ['cell_features', 'table_detector']
 
 from table_detector import TableDetector
