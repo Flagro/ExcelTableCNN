@@ -19,7 +19,7 @@ class MarkupLoader:
                 
                 # The first 4 fields are file_name, sheet_name, set_type, and parent_path
                 file_name, sheet_name, set_type, parent_path = fields[:4]
-                parent_path = parent_path.replace('\\', '/')
+                parent_path = parent_path.replace("\\", "/")
                 # All remaining fields are table_range values
                 table_ranges = fields[4:]
                 processed_data.append([file_name, sheet_name, set_type, parent_path, table_ranges])
