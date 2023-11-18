@@ -42,7 +42,7 @@ def convert_files(files_df, data_folder_path):
 def extract_features(files_df, data_folder_path):
     features_dfs = []
     # Iterate over the unique pairs
-    for _, row in files_df.iterrows():
+    for _, row in tqdm(files_df.iterrows(), total=files_df.shape[0], desc="Extracting features from files"):
         file_path = os.path.join(row['parent_path'], row['file_name'])
         features_df = get_table_features(os.path.join(data_folder_path, file_path), row['sheet_name'])
         features_df["file_path"] = file_path
@@ -81,7 +81,7 @@ def get_train_test(train_size=30, testing_size=10,
     # Converting files
     dataset_files_converted = convert_files(files_df_sample, data_folder_path)
 
-    print("Getting table features...")
+    # Getting table features
     features_df = extract_features(dataset_files_converted, data_folder_path)
 
     if backup_result:
