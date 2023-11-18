@@ -47,6 +47,10 @@ def get_train_test(train_size=30, testing_size=10,
     print("Getting markup...")
     markup_loader = MarkupLoader()
     markup_files = markup_loader.get_markup(markup_name)
+
+    # different extensions fix:
+    dataset_files["file_name_no_ext"] = dataset_files["file_name"].apply(lambda x: os.path.splitext(x)[0])
+    markup_files["file_name_no_ext"] = markup_files["file_name"].apply(lambda x: os.path.splitext(x)[0])
     
     files_df = markup_files.merge(dataset_files, how="inner", on=["file_name_no_ext", "parent_path"])
     files_df = files_df.drop(columns=["file_name_x", "file_name_no_ext"])
