@@ -27,7 +27,7 @@ def get_cell_features_xlsx(cur_cell):
 
 
 def get_table_features(file_path, sheet_name) -> pd.DataFrame:
-    wb = openpyxl.load_workbook(file_path, read_only=True)
+    wb = openpyxl.load_workbook(file_path)
     ws = wb[sheet_name]
     data = []
     for row in ws.iter_rows():
