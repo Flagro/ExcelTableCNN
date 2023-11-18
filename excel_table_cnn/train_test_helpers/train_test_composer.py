@@ -4,6 +4,7 @@ import subprocess
 from tqdm import tqdm
 from .dataset_loader import DatasetLoader
 from .markup_loader import MarkupLoader
+from .cell_features import get_table_features
 
 
 def convert_file(file_path, output_dir):
@@ -31,9 +32,25 @@ def convert_files(files_df, data_folder_path):
         if file_ext.lower() in ['.xls', '.xlsb']:
             convert_file(file_path, output_directory)
             new_rows.append({'file_name': file_name + '.xlsx', 'parent_path': row['parent_path']})
+        else:
+            new_rows.append({'file_name': file_name + '.xlsx', 'parent_path': row['parent_path']})
 
     new_files_df = pd.DataFrame(new_rows)
     return new_files_df
+
+
+def extract_features(files_df, data_folder_path):
+    features_dfs = []
+    # Iterate over the unique pairs
+    for _, row in files_df.iterrows():
+        file_path = os.path.join(row['parent_path'], row['file_name'])
+        features_df = get_table_features(os.path.join(data_folder_path, file_path), row['sheet_name'])
+        features_df["file_path"] = file_path
+        features_df["sheet_name"] = row['sheet_name']
+        features_df["set_type"] = row["set_type"]
+        features_df["table_range"] = [row["table_range"] for _ in range(len(features_df.index))]
+        features_dfs.append(features_df)
+    return pd.concat(features_dfs, ignore_index=True)
 
 
 def get_train_test(train_size=30, testing_size=10, 
@@ -60,10 +77,10 @@ def get_train_test(train_size=30, testing_size=10,
     testing_samples = files_df[files_df["set_type"] == "testing_set"].sample(testing_size)
     files_df_sample = pd.concat([training_samples, testing_samples])
 
-    print("Converting files...")
-    # dataset_files_converted = convert_files(files_df_sample, data_folder_path)
+    # Converting files
+    dataset_files_converted = convert_files(files_df_sample, data_folder_path)
 
     print("Getting table features...")
+    # features_df = extract_features(dataset_files_converted, data_folder_path)
 
-
-    return files_df_sample
+    return dataset_files_converted
