@@ -2,7 +2,8 @@ import os
 import pandas as pd
 import subprocess
 from tqdm import tqdm
-from train_test_helpers import DatasetLoader, MarkupLoader
+from .dataset_loader import DatasetLoader
+from .markup_loader import MarkupLoader
 
 
 def convert_file(file_path, output_dir):
@@ -38,10 +39,12 @@ def convert_files(files_df, data_folder_path):
 def get_train_test(train_size=30, testing_size=10, 
                    data_folder_path="./ExcelTableCNN/data/", 
                    dataset_name="VEnron2", markup_name="tablesense"):
+    print("Downloading dataset...")
     dataset_loader = DatasetLoader(save_path=data_folder_path)
     dataset_loader.get_dataset(dataset_name)
     dataset_files = dataset_loader.get_files(dataset_name)
 
+    print("Getting markup...")
     markup_loader = MarkupLoader()
     markup_files = markup_loader.get_markup(markup_name)
     
@@ -53,6 +56,10 @@ def get_train_test(train_size=30, testing_size=10,
     testing_samples = files_df[files_df["set_type"] == "testing_set"].sample(testing_size)
     files_df_sample = pd.concat([training_samples, testing_samples])
 
+    print("Converting files...")
     # dataset_files_converted = convert_files(files_df_sample, data_folder_path)
+
+    print("Getting table features...")
+
 
     return files_df_sample
