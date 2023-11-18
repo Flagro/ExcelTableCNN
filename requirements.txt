@@ -1,2 +1,4 @@
 py7zr
-xlrd
+openpyxl
+pandas
+tqdm
