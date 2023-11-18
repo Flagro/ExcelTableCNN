@@ -53,7 +53,16 @@ class DatasetLoader:
         os.remove(dataset_path)
         print(f"{dataset_name}.7z removed successfully.")
         
-    def get_dataset(self, dataset_name):
+    def get_dataset(self, dataset_name, check_exists=True):
+        # Construct the path to the dataset directory
+        dataset_dir = os.path.join(self.save_path, dataset_name)
+
+        # Check if the dataset already exists
+        if check_exists and os.path.exists(dataset_dir):
+            print(f"Dataset {dataset_name} already exists at {dataset_dir}.")
+            return
+
+        # Download and unpack the dataset
         self.download_dataset(dataset_name)
         self.unpack_dataset(dataset_name)
 
