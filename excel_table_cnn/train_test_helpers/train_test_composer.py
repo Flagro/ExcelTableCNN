@@ -55,7 +55,8 @@ def extract_features(files_df, data_folder_path):
 
 def get_train_test(train_size=30, testing_size=10, 
                    data_folder_path="./ExcelTableCNN/data/", 
-                   dataset_name="VEnron2", markup_name="tablesense"):
+                   dataset_name="VEnron2", markup_name="tablesense",
+                   backup_result=True):
     print("Downloading dataset...")
     dataset_loader = DatasetLoader(save_path=data_folder_path)
     dataset_loader.get_dataset(dataset_name)
@@ -82,5 +83,9 @@ def get_train_test(train_size=30, testing_size=10,
 
     print("Getting table features...")
     features_df = extract_features(dataset_files_converted, data_folder_path)
+
+    if backup_result:
+        print("Backing up results...")
+        features_df.to_pickle(os.path.join(data_folder_path, "features.pkl"))
 
     return features_df
