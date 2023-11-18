@@ -1,35 +1,5 @@
 import pandas as pd
-import xlrd
 import openpyxl
-from openpyxl.utils.cell import get_column_letter
-
-
-def get_cell_features_xls(cur_cell, row_idx, col_idx, sheet, book):
-    xf = book.xf_list[cur_cell.xf_index]
-    font = book.font_list[xf.font_index]
-    
-    cell_features = {
-        "coordinate": get_column_letter(col_idx + 1) + str(row_idx + 1),
-        "is_empty": cur_cell.ctype == xlrd.XL_CELL_EMPTY,
-        "is_string": cur_cell.ctype == xlrd.XL_CELL_TEXT,
-        "is_bold": font.bold,
-        "is_italic": font.italic,
-        # Some features might not have a direct equivalent in xlrd, so they are approximated or left out
-        "formula": False,
-        "is_merged": False,
-        "left_border": False,
-        "right_border": False,
-        "top_border": False,
-        "bottom_border": False,
-        "is_filled": False,
-        "horizontal_alignment": False,
-        "left_horizontal_alignment": False,
-        "right_horizontal_alignment": False,
-        "center_horizontal_alignment": False,
-        "wrapped_text": False,
-        "indent": False
-    }
-    return cell_features
 
 
 def get_cell_features_xlsx(cur_cell):
@@ -57,24 +27,12 @@ def get_cell_features_xlsx(cur_cell):
 
 
 def get_table_features(file_path, sheet_name) -> pd.DataFrame:
-    if file_path.endswith('.xls'):
-        wb = xlrd.open_workbook(file_path, formatting_info=True)
-        ws = wb.sheet_by_name(sheet_name)
-        data = []
-        for row in range(ws.nrows):
-            for col in range(ws.ncols):
-                cell = ws.cell(row, col)
-                data.append(get_cell_features_xls(cell, row, col, ws, wb))
-    
-    elif file_path.endswith('.xlsx'):
-        wb = openpyxl.load_workbook(file_path, read_only=True)
-        ws = wb[sheet_name]
-        data = []
-        for row in ws.iter_rows():
-            for cell in row:
-                data.append(get_cell_features_xlsx(cell))
-    else:
-        raise ValueError(f"Unsupported file format for file: {file_path}")
+    wb = openpyxl.load_workbook(file_path, read_only=True)
+    ws = wb[sheet_name]
+    data = []
+    for row in ws.iter_rows():
+        for cell in row:
+            data.append(get_cell_features_xlsx(cell))
 
     result_df = pd.DataFrame(data)
     return result_df
