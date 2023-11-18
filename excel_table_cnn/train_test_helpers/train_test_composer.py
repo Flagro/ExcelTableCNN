@@ -81,6 +81,6 @@ def get_train_test(train_size=30, testing_size=10,
     dataset_files_converted = convert_files(files_df_sample, data_folder_path)
 
     print("Getting table features...")
-    # features_df = extract_features(dataset_files_converted, data_folder_path)
+    features_df = extract_features(dataset_files_converted, data_folder_path)
 
-    return dataset_files_converted
+    return features_df
