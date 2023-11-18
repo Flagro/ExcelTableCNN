@@ -4,7 +4,7 @@ import openpyxl
 
 def get_cell_features_xlsx(cur_cell):
     cell_features = {
-        "coordinate": (cur_cell.row, cur_cell.column),
+        "coordinate": cur_cell.coordinate,
         "is_empty": cur_cell.value is None,
         "is_string": cur_cell.data_type in ['s', 'str'],
         "is_merged": type(cur_cell).__name__ == 'MergedCell',
