@@ -22,8 +22,10 @@ def convert_file(file_path, output_dir):
 
 
 def convert_files(files_df, data_folder_path):
-    new_rows = []
-    for _, row in tqdm(files_df.iterrows(), total=files_df.shape[0], desc="Converting Files"):
+    # Create a copy of the original DataFrame to preserve other columns
+    updated_files_df = files_df.copy()
+
+    for index, row in tqdm(files_df.iterrows(), total=files_df.shape[0], desc="Converting Files"):
         data_file_path = os.path.join(row['parent_path'], row['file_name'])
         file_path = os.path.join(data_folder_path, data_file_path)
         output_directory = os.path.join(data_folder_path, row['parent_path'])
@@ -31,12 +33,10 @@ def convert_files(files_df, data_folder_path):
 
         if file_ext.lower() in ['.xls', '.xlsb']:
             convert_file(file_path, output_directory)
-            new_rows.append({'file_name': file_name + '.xlsx', 'parent_path': row['parent_path']})
-        else:
-            new_rows.append({'file_name': file_name + '.xlsx', 'parent_path': row['parent_path']})
+            # Update only the file name's extension to .xlsx
+            updated_files_df.at[index, 'file_name'] = file_name + '.xlsx'
 
-    new_files_df = pd.DataFrame(new_rows)
-    return new_files_df
+    return updated_files_df
 
 
 def extract_features(files_df, data_folder_path):
