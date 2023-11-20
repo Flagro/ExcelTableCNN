@@ -32,6 +32,7 @@ class SpreadsheetDataset(Dataset):
 
             sheet_tensor = torch.zeros((max_rows, max_cols, num_features))
             label_grid = torch.zeros((max_rows, max_cols), dtype=torch.long)
+            table_ranges = [parse_table_range(tr) for tr in group['table_range'].iloc[0]]
 
             for _, row in group.iterrows():
                 row_idx, col_idx = parse_coordinate(row['coordinate'])
@@ -39,7 +40,11 @@ class SpreadsheetDataset(Dataset):
                 sheet_tensor[row_idx, col_idx, :] = cell_features
 
                 # Determine label for the cell
-                label = any(...)  # Logic to determine if the cell is inside a table range
+                label = 0  # Default label (outside any table)
+                for (start_row, start_col), (end_row, end_col) in table_ranges:
+                    if start_row <= row_idx <= end_row and start_col <= col_idx <= end_col:
+                        label = 1  # Cell is inside a table
+                        break
                 label_grid[row_idx, col_idx] = label
 
             self.data.append(sheet_tensor)
