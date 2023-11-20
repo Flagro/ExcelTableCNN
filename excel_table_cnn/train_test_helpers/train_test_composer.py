@@ -84,8 +84,12 @@ def get_train_test(train_size=30, testing_size=10,
     # Getting table features
     features_df = extract_features(dataset_files_converted, data_folder_path)
 
+    train_df = features_df[features_df["set_type"] == "training_set"].drop(columns=["set_type"])
+    test_df = features_df[features_df["set_type"] == "testing_set"].drop(columns=["set_type"])
+
     if backup_result:
         print("Backing up results...")
-        features_df.to_pickle(os.path.join(data_folder_path, "features.pkl"))
+        train_df.to_pickle(os.path.join(data_folder_path, "train_features.pkl"))
+        test_df.to_pickle(os.path.join(data_folder_path, "test_features.pkl"))
 
-    return features_df
+    return train_df, test_df
