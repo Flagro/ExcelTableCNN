@@ -1,65 +1,66 @@
+import torch
+from torch.utils.data import Dataset, DataLoader
 import pandas as pd
-import numpy as np
-import re
 
-def coordinate_to_row_col(coord):
-    """Convert Excel-style coordinate to row and column index."""
-    col_letters, row_num = re.match(r'([A-Z]+)([0-9]+)', coord).groups()
-    col_idx = sum([(ord(char) - 64) * (26**i) for i, char in enumerate(col_letters[::-1])]) - 1
-    row_idx = int(row_num) - 1
-    return row_idx, col_idx
+def parse_coordinate(coordinate):
+    # Convert Excel-style coordinate (e.g., 'A1') to numerical indices
+    # Placeholder for actual implementation
+    return (row_index, col_index)
 
-def extract_bounding_boxes(table_ranges):
-    """Extract bounding boxes from table ranges."""
-    bounding_boxes = []
-    for table_range in table_ranges:
-        start_range, end_range = table_range.split(":")
-        start_row, start_col = coordinate_to_row_col(start_range)
-        end_row, end_col = coordinate_to_row_col(end_range)
-        bounding_boxes.append((start_row, start_col, end_row, end_col))
-    return bounding_boxes
+def parse_table_range(table_range):
+    # Convert table range string to numerical coordinates
+    # Placeholder for actual implementation
+    return [(top_left_row, top_left_col), (bottom_right_row, bottom_right_col)]
 
-def tables_to_tensors(features_df):
-    df = features_df.copy()  # Your dataframe
+def preprocess_features(cell_features):
+    # Normalize and encode cell features into a tensor
+    # Placeholder for actual implementation
+    return tensor
 
-    results = {}
-    FIXED_N, FIXED_M = 150, 50
+class SpreadsheetDataset(Dataset):
+    def __init__(self, dataframe):
+        self.data = []
+        self.labels = []
 
-    # Group by each sheet
-    for (_, group) in df.groupby(['file_path', 'sheet_name']):
-        tensors = []
-        target_tensors = []  # To hold the target bounding boxes
-        table_ranges = group['table_range'].iloc[0]
-        C = len(group.columns) - 5 + 1
-        
-        bounding_boxes = extract_bounding_boxes(table_ranges)
+        non_feature_columns = ['coordinate', 'file_path', 'sheet_name', 'set_type', 'table_range']
 
-        # Identify the starting point of data in this group
-        min_row_idx = min(coordinate_to_row_col(coord)[0] for coord in group['coordinate'])
-        min_col_idx = min(coordinate_to_row_col(coord)[1] for coord in group['coordinate'])
+        # Group by file_path and sheet_name to process each sheet separately
+        grouped = dataframe.groupby(['file_path', 'sheet_name'])
+        for _, group in grouped:
+            max_rows, max_cols = self._get_max_dimensions(group)
+            num_features = len(group.columns) - len(non_feature_columns)
 
-        for row_block_start in range(min_row_idx, min_row_idx + FIXED_N, FIXED_N):
-            for col_block_start in range(min_col_idx, min_col_idx + FIXED_M, FIXED_M):
-                tensor = np.zeros((FIXED_N, FIXED_M, C))
-                
-                block_group = group[group['coordinate'].apply(lambda coord: 
-                                row_block_start <= coordinate_to_row_col(coord)[0] < row_block_start + FIXED_N and 
-                                col_block_start <= coordinate_to_row_col(coord)[1] < col_block_start + FIXED_M)]
-                
-                # Extract bounding boxes that fall within this block
-                block_bboxes = [(start_row - row_block_start, start_col - col_block_start, end_row - row_block_start, end_col - col_block_start)
-                                for (start_row, start_col, end_row, end_col) in bounding_boxes
-                                if row_block_start <= start_row < row_block_start + FIXED_N and
-                                col_block_start <= start_col < col_block_start + FIXED_M]
+            sheet_tensor = torch.zeros((max_rows, max_cols, num_features))
+            label_grid = torch.zeros((max_rows, max_cols), dtype=torch.long)
 
-                for _, row in block_group.iterrows():
-                    row_idx, col_idx = coordinate_to_row_col(row['coordinate'])
-                    features = row.drop(['file_path', 'sheet_name', 'coordinate', 'table_range', 'set_type']).values
+            for _, row in group.iterrows():
+                row_idx, col_idx = parse_coordinate(row['coordinate'])
+                cell_features = preprocess_features(row.drop(non_feature_columns))
+                sheet_tensor[row_idx, col_idx, :] = cell_features
 
-                    tensor[row_idx - row_block_start, col_idx - col_block_start, :-1] = features
+                # Determine label for the cell
+                label = any(...)  # Logic to determine if the cell is inside a table range
+                label_grid[row_idx, col_idx] = label
 
-                tensors.append(tensor)
-                target_tensors.append({"boxes": block_bboxes})
+            self.data.append(sheet_tensor)
+            self.labels.append(label_grid)
 
-        results[(group["file_path"].iloc[0], group["sheet_name"].iloc[0])] = {"tensors": tensors, "targets": target_tensors, "set_type": group["set_type"].iloc[0]}
-    return results
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
+
+    def _get_max_dimensions(self, group):
+        # Compute the max row and column indices for this spreadsheet
+        max_row, max_col = 0, 0
+        for _, row in group.iterrows():
+            row_idx, col_idx = parse_coordinate(row['coordinate'])
+            max_row = max(max_row, row_idx)
+            max_col = max(max_col, col_idx)
+        return max_row + 1, max_col + 1  # Add 1 because indices are zero-based
+
+
+# Usage:
+# train_dataset = SpreadsheetDataset(train_df)
+# test_dataset = SpreadsheetDataset(test_df)
+
+# train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+# test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
