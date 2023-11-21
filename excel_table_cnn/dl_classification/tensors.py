@@ -24,7 +24,7 @@ class SpreadsheetDataset(Dataset):
         self.data = []
         self.labels = []
 
-        non_feature_columns = ['coordinate', 'file_path', 'sheet_name', 'set_type', 'table_range']
+        non_feature_columns = ['coordinate', 'file_path', 'sheet_name', 'table_range']
 
         # Group by file_path and sheet_name to process each sheet separately
         grouped = dataframe.groupby(['file_path', 'sheet_name'])
