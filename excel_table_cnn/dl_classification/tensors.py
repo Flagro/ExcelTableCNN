@@ -63,11 +63,3 @@ class SpreadsheetDataset(Dataset):
             max_row = max(max_row, row_idx)
             max_col = max(max_col, col_idx)
         return max_row + 1, max_col + 1  # Add 1 because indices are zero-based
-
-
-# Usage:
-# train_dataset = SpreadsheetDataset(train_df)
-# test_dataset = SpreadsheetDataset(test_df)
-
-# train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-# test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
