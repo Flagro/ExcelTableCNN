@@ -60,6 +60,9 @@ class SpreadsheetDataset(Dataset):
             self.segmentation_labels.append(label_grid)
             self.detection_labels.append(get_bounding_box(table_ranges))
 
+    def get_num_cell_features(self):
+        return self.data[0].shape[0]
+
     def __len__(self):
         # The length of the dataset is the number of spreadsheets
         return len(self.data)
