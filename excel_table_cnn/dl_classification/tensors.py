@@ -54,6 +54,8 @@ class SpreadsheetDataset(Dataset):
                         break
                 label_grid[row_idx, col_idx] = label
 
+            # Permute tensor to C x H x W
+            sheet_tensor = sheet_tensor.permute(2, 0, 1)
             self.data.append(sheet_tensor)
             self.segmentation_labels.append(label_grid)
             self.detection_labels.append(get_bounding_box(table_ranges))
