@@ -34,7 +34,7 @@ class SpreadsheetDataset(Dataset):
 
         # Group by file_path and sheet_name to process each sheet separately
         grouped = dataframe.groupby(['file_path', 'sheet_name'])
-        for _, group in tqdm(grouped.iterrows(), total=grouped.shape[0], desc="Creating tensors and labels"):
+        for _, group in tqdm(grouped, total=grouped.shape[0], desc="Creating tensors and labels"):
             max_rows, max_cols = self._get_max_dimensions(group)
             num_features = len(group.columns) - len(non_feature_columns)
 
