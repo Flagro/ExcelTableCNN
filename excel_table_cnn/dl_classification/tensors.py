@@ -17,7 +17,7 @@ def parse_table_range(table_range):
 
 def preprocess_features(row):
     # Convert the pandas Series directly to a tensor
-    return torch.tensor(row.values, dtype=torch.float32)
+    return torch.tensor(row.astype(float).values, dtype=torch.float32)
 
 class SpreadsheetDataset(Dataset):
     def __init__(self, dataframe):
