@@ -53,7 +53,7 @@ def extract_features(files_df, data_folder_path):
     return pd.concat(features_dfs, ignore_index=True)
 
 
-def get_train_test(train_size=30, testing_size=10, 
+def get_train_test(train_size=None, testing_size=None, 
                    data_folder_path="./ExcelTableCNN/data/", 
                    dataset_name="VEnron2", markup_name="tablesense",
                    backup_result=True):
@@ -74,8 +74,14 @@ def get_train_test(train_size=30, testing_size=10,
     files_df = files_df.drop(columns=["file_name_x", "file_name_no_ext"])
     files_df = files_df.rename(columns={"file_name_y": "file_name"})
 
-    training_samples = files_df[files_df["set_type"] == "training_set"].sample(train_size)
-    testing_samples = files_df[files_df["set_type"] == "testing_set"].sample(testing_size)
+    if train_size is None:
+        training_samples = files_df[files_df["set_type"] == "training_set"]
+    else:
+        training_samples = files_df[files_df["set_type"] == "training_set"].sample(train_size)
+    if testing_size is None:
+        testing_samples = files_df[files_df["set_type"] == "testing_set"]
+    else:
+        testing_samples = files_df[files_df["set_type"] == "testing_set"].sample(testing_size)
     files_df_sample = pd.concat([training_samples, testing_samples])
 
     # Converting files
