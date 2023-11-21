@@ -19,10 +19,15 @@ def preprocess_features(row):
     # Convert the pandas Series directly to a tensor
     return torch.tensor(row.astype(float).values, dtype=torch.float32)
 
+def get_bounding_box(table_ranges):
+    return [[x_min, y_min, x_max, y_max, 1] for (x_min, y_min), (x_max, y_max) in table_ranges]
+
 class SpreadsheetDataset(Dataset):
     def __init__(self, dataframe):
+        # Make tensors in CxHxW format
         self.data = []
-        self.labels = []
+        self.segmentation_labels = []  # For FCN
+        self.detection_labels = []     # For R-CNN
 
         non_feature_columns = ['coordinate', 'file_path', 'sheet_name', 'table_range']
 
@@ -50,7 +55,8 @@ class SpreadsheetDataset(Dataset):
                 label_grid[row_idx, col_idx] = label
 
             self.data.append(sheet_tensor)
-            self.labels.append(label_grid)
+            self.segmentation_labels.append(label_grid)
+            self.detection_labels.append(get_bounding_box(table_ranges))
 
     def __len__(self):
         # The length of the dataset is the number of spreadsheets
