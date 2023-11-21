@@ -52,6 +52,10 @@ class SpreadsheetDataset(Dataset):
             self.data.append(sheet_tensor)
             self.labels.append(label_grid)
 
+    def __len__(self):
+        # The length of the dataset is the number of spreadsheets
+        return len(self.data)
+
     def __getitem__(self, idx):
         return self.data[idx], self.labels[idx]
 
