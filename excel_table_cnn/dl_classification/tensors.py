@@ -34,7 +34,7 @@ class SpreadsheetDataset(Dataset):
 
         # Group by file_path and sheet_name to process each sheet separately
         grouped = dataframe.groupby(['file_path', 'sheet_name'])
-        for _, group in grouped:
+        for _, group in tqdm(grouped.iterrows(), total=grouped.shape[0], desc="Creating tensors and labels"):
             max_rows, max_cols = self._get_max_dimensions(group)
             num_features = len(group.columns) - len(non_feature_columns)
 
@@ -42,7 +42,7 @@ class SpreadsheetDataset(Dataset):
             label_grid = torch.zeros((max_rows, max_cols), dtype=torch.long)
             table_ranges = [parse_table_range(tr) for tr in group['table_range'].iloc[0]]
 
-            for _, row in tqdm(group.iterrows(), total=group.shape[0], desc="Converting to tensors and labels"):
+            for _, row in group.iterrows():
                 row_idx, col_idx = parse_coordinate(row['coordinate'])
                 cell_features = preprocess_features(row.drop(non_feature_columns))
                 sheet_tensor[row_idx, col_idx, :] = cell_features
