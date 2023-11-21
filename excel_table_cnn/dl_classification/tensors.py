@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 from torch.utils.data import Dataset
 from openpyxl.utils.cell import coordinate_to_tuple, range_boundaries
 
@@ -41,7 +42,7 @@ class SpreadsheetDataset(Dataset):
             label_grid = torch.zeros((max_rows, max_cols), dtype=torch.long)
             table_ranges = [parse_table_range(tr) for tr in group['table_range'].iloc[0]]
 
-            for _, row in group.iterrows():
+            for _, row in tqdm(group.iterrows(), total=group.shape[0], desc="Converting to tensors and labels"):
                 row_idx, col_idx = parse_coordinate(row['coordinate'])
                 cell_features = preprocess_features(row.drop(non_feature_columns))
                 sheet_tensor[row_idx, col_idx, :] = cell_features
