@@ -12,10 +12,9 @@ def parse_table_range(table_range):
     # Placeholder for actual implementation
     return [(top_left_row, top_left_col), (bottom_right_row, bottom_right_col)]
 
-def preprocess_features(cell_features):
-    # Normalize and encode cell features into a tensor
-    # Placeholder for actual implementation
-    return tensor
+def preprocess_features(row):
+    # Convert the pandas Series directly to a tensor
+    return torch.tensor(row.values, dtype=torch.float32)
 
 class SpreadsheetDataset(Dataset):
     def __init__(self, dataframe):
