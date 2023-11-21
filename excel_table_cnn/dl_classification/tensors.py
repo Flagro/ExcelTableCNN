@@ -1,16 +1,19 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
-import pandas as pd
+from torch.utils.data import Dataset
+from openpyxl.utils.cell import coordinate_to_tuple, range_boundaries
+
 
 def parse_coordinate(coordinate):
     # Convert Excel-style coordinate (e.g., 'A1') to numerical indices
     # Placeholder for actual implementation
-    return (row_index, col_index)
+    row_index, col_index = coordinate_to_tuple(coordinate)
+    return (row_index - 1, col_index - 1)
 
 def parse_table_range(table_range):
     # Convert table range string to numerical coordinates
     # Placeholder for actual implementation
-    return [(top_left_row, top_left_col), (bottom_right_row, bottom_right_col)]
+    min_col, min_row, max_col, max_row = range_boundaries(table_range)
+    return [(min_row - 1, min_col - 1), (max_row - 1, max_col - 1)]
 
 def preprocess_features(row):
     # Convert the pandas Series directly to a tensor
