@@ -43,13 +43,16 @@ def extract_features(files_df, data_folder_path):
     features_dfs = []
     # Iterate over the unique pairs
     for _, row in tqdm(files_df.iterrows(), total=files_df.shape[0], desc="Extracting features from files"):
-        file_path = os.path.join(row['parent_path'], row['file_name'])
-        features_df = get_table_features(os.path.join(data_folder_path, file_path), row['sheet_name'])
-        features_df["file_path"] = file_path
-        features_df["sheet_name"] = row['sheet_name']
-        features_df["set_type"] = row["set_type"]
-        features_df["table_range"] = [row["table_range"] for _ in range(len(features_df.index))]
-        features_dfs.append(features_df)
+        try:
+            file_path = os.path.join(row['parent_path'], row['file_name'])
+            features_df = get_table_features(os.path.join(data_folder_path, file_path), row['sheet_name'])
+            features_df["file_path"] = file_path
+            features_df["sheet_name"] = row['sheet_name']
+            features_df["set_type"] = row["set_type"]
+            features_df["table_range"] = [row["table_range"] for _ in range(len(features_df.index))]
+            features_dfs.append(features_df)
+        except Exception as e:
+            print(f"Error extracting features from {file_path}: {e}")
     return pd.concat(features_dfs, ignore_index=True)
 
 
