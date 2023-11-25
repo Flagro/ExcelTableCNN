@@ -21,14 +21,16 @@ def preprocess_features(row):
     return torch.tensor(row.astype(float).values, dtype=torch.float32)
 
 def get_bounding_box(table_ranges):
-    return [[x_min, y_min, x_max, y_max, 1] for (x_min, y_min), (x_max, y_max) in table_ranges]
+    boxes = torch.tensor([[x_min, y_min, x_max, y_max] for (x_min, y_min), (x_max, y_max) in table_ranges], 
+                         dtype=torch.float32)
+    labels = torch.ones((boxes.shape[0],), dtype=torch.int64)  # Assuming '1' is the label for tables
+    return {'boxes': boxes, 'labels': labels}
 
 class SpreadsheetDataset(Dataset):
     def __init__(self, dataframe):
         # Make tensors in CxHxW format
         self.data = []
-        self.segmentation_labels = []  # For FCN
-        self.detection_labels = []     # For R-CNN
+        self.labels = []
 
         non_feature_columns = ['coordinate', 'file_path', 'sheet_name', 'table_range']
 
@@ -47,19 +49,10 @@ class SpreadsheetDataset(Dataset):
                 cell_features = preprocess_features(row.drop(non_feature_columns))
                 sheet_tensor[row_idx, col_idx, :] = cell_features
 
-                # Determine label for the cell
-                label = 0  # Default label (outside any table)
-                for (start_row, start_col), (end_row, end_col) in table_ranges:
-                    if start_row <= row_idx <= end_row and start_col <= col_idx <= end_col:
-                        label = 1  # Cell is inside a table
-                        break
-                label_grid[row_idx, col_idx] = label
-
             # Permute tensor to C x H x W
             sheet_tensor = sheet_tensor.permute(2, 0, 1)
             self.data.append(sheet_tensor)
-            self.segmentation_labels.append(label_grid)
-            self.detection_labels.append(get_bounding_box(table_ranges))
+            self.labels.append(get_bounding_box(table_ranges))
 
     def get_num_cell_features(self):
         return self.data[0].shape[0]
@@ -69,7 +62,7 @@ class SpreadsheetDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx], self.detection_labels[idx]
+        return self.data[idx], self.labels[idx]
 
     def _get_max_dimensions(self, group):
         # Compute the max row and column indices for this spreadsheet
