@@ -69,7 +69,7 @@ class SpreadsheetDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.data[idx], self.labels[idx]
+        return self.data[idx], self.detection_labels[idx]
 
     def _get_max_dimensions(self, group):
         # Compute the max row and column indices for this spreadsheet
