@@ -40,3 +40,12 @@ class FCN_RCNN(nn.Module):
         # Forward pass through R-CNN
         output = self.rcnn(features)
         return output
+
+def get_model(num_channels):
+    pass
+
+def train_model(model, train_loader, optimizer, criterion, device):
+    pass
+
+def evaluate_model(model, test_loader, criterion, device):
+    pass
