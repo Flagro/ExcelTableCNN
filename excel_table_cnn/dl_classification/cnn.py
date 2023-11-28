@@ -1,21 +1,22 @@
 import torch
 import torch.nn as nn
+import torchvision.models as models
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.backbone_utils import BackboneWithFPN
 
 # Define the FCN model
-class FCN(nn.Module):
+class FCNBackbone(nn.Module):
     def __init__(self, num_features):
-        super(FCN, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(num_features, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 32, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(32, 3, kernel_size=3, padding=1)  # Reducing to 3 channels
+        self.features = models.vgg16(pretrained=True).features  # Use VGG16's features
 
     def forward(self, x):
-        x = torch.relu(self.conv1(x))
-        x = torch.relu(self.conv2(x))
-        x = torch.relu(self.conv3(x))
+        x = self.conv1(x)  # Convert to 3 channels
+        x = self.features(x)  # Apply VGG16 features
         return x
 
 # Define the combined FCN + R-CNN model
