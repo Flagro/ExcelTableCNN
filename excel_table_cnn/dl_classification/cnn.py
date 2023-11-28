@@ -4,6 +4,13 @@ import torchvision.models as models
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.backbone_utils import BackboneWithFPN
+from torchvision.models.detection import anchor_utils
+
+def get_anchor_generator():
+    # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
+    sizes = ((8,), (16,), (32,), (64,), (128,), (256,), (512,), (1024,), (2048,), (4096,))
+    aspect_ratios = ((0.00390625,), (0.0078125,), (0.015625,), (0.03125,), (0.0625,), (0.125,), (0.25,), (0.5,), (1.0,), (2.0,), (4.0,), (8.0,), (16.0,), (32.0,), (64.0,), (128.0,), (256.0,))
+    return anchor_utils.AnchorGenerator(sizes, aspect_ratios)
 
 # Define the FCN model
 class FCNBackbone(nn.Module):
