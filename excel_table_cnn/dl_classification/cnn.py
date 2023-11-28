@@ -26,28 +26,74 @@ class FCNBackbone(nn.Module):
         x = self.features(x)  # Apply VGG16 features
         return x
 
-# Define the combined FCN + R-CNN model
-class FCN_RCNN(nn.Module):
-    def __init__(self, num_features):
-        super(FCN_RCNN, self).__init__()
-        self.fcn = FCN(num_features)
+# Define the main model
+class SpreadsheetTableFinder(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.backbone = SimpleFCNBackbone()
+        self.rpn = rpn
+        self.roi_align = roi_align
 
-        # Create a backbone from the FCN
-        backbone = BackboneWithFPN(self.fcn, return_layers={self.fcn.conv3: "0"}, out_channels=3)
-        
-        # RPN (Region Proposal Network) and Anchor Generator
-        anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),), aspect_ratios=((0.5, 1.0, 2.0),) * 5)
+        # Get the number of input features for the classifier
+        input_features = self.backbone.features[-1].out_channels
+        self.box_predictor = FastRCNNPredictor(input_features, num_classes=2)  # Number of classes is 2 (background + table)
 
-        # Create the Faster R-CNN model using the custom backbone
-        self.rcnn = FasterRCNN(backbone, num_classes=2, rpn_anchor_generator=anchor_generator)
+    def forward(self, images, targets=None):
+        # Step 1: Backbone to get features
+        features = self.backbone(images)
 
-    def forward(self, images):
-        # Forward pass through FCN
-        features = self.fcn(images)
+        # Step 2: RPN to get proposals
+        proposals, proposal_losses = self.rpn(images, features, targets)
 
-        # Forward pass through R-CNN
-        output = self.rcnn(features)
-        return output
+        # Step 3: RoIAlign to get features for the detected regions
+        if self.training:
+            # Match targets and proposals during training
+            boxes = [t['boxes'] for t in targets]
+            labels = [t['labels'] for t in targets]
+            ious = box_iou(targets['boxes'], proposals)
+            # Assume these values are as per your application
+            high_threshold = 0.7
+            low_threshold = 0.3
+            batch_size_per_image = 256
+            positive_fraction = 0.5
+
+            # Create the matcher and the BalancedPositiveNegativeSampler
+            match_quality_matrix = box_iou(boxes, proposals)
+            matcher = matcher.Matcher(
+                high_threshold,
+                low_threshold,
+                allow_low_quality_matches=False,
+            )
+            matched_idxs = matcher(match_quality_matrix)
+
+            # Generate the balanced sample of positive and negative proposals.
+            sampler = BalancedPositiveNegativeSampler(batch_size_per_image, positive_fraction)
+            sampled_pos_inds, sampled_neg_inds = sampler(matched_idxs)
+
+            # Now combine positive indices and negative indices to get all indices
+            indices = torch.cat([sampled_pos_inds, sampled_neg_inds], dim=0)
+
+            # Use the indices to get all sampled proposals
+            sampled_proposals = proposals[indices]
+
+            # Similarly, you need to gather the matched_gt_boxes for training (here just indices)
+            matched_gt_boxes = boxes[matched_idxs[indices]]
+
+            rois = torch.cat([sampled_proposals, matched_gt_boxes], dim=0)
+        else:
+            rois = proposals
+
+        roi_features = self.roi_align(features, rois)
+
+        # Step 4: Faster R-CNN box predictor
+        result, class_losses = self.box_predictor(roi_features)
+
+        # Combine losses
+        losses = {}
+        losses.update(proposal_losses)
+        losses.update(class_losses)
+
+        return result if self.training else losses
 
 def get_model(num_channels):
     pass
