@@ -26,6 +26,39 @@ class FCNBackbone(nn.Module):
         x = self.features(x)  # Apply VGG16 features
         return x
 
+class RPN(nn.Module):
+    def __init__(self, anchor_generator):
+        super().__init__()
+        
+        # Define a simple feature pyramid network
+        # backbone_out_channels = 256  # Example feature size
+        # fpn = FeaturePyramidNetwork(in_channels_list=[backbone_out_channels], out_channels=backbone_out_channels)
+        # rpn_head = RPNHead(fpn.out_channels, anchor_generator.num_anchors_per_location()[0])
+
+        # # RoIAlign layer spanning anchor points
+        # roi_align = MultiScaleRoIAlign(featmap_names=["0", "1", "2", "3"], output_size=7, sampling_ratio=2)
+
+        # rpn_pre_nms_top_n = {"training": 2000, "testing": 1000}
+        # rpn_post_nms_top_n = {"training": 2000, "testing": 1000}
+
+        self.rpn = nn.Sequential(
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(512, 512, kernel_size=1),
+            nn.ReLU(),
+            nn.Conv2d(512, 512, kernel_size=1),
+            nn.ReLU(),
+        )
+        self.anchor_generator = anchor_generator
+        self.rpn_head = nn.Conv2d(512, self.anchor_generator.num_anchors_per_location()[0] * 2, kernel_size=1)
+
+    def forward(self, images, features, targets=None):
+        # Step 1: RPN to get proposals
+        rpn_features = self.rpn(features)
+        anchors = self.anchor_generator(images, features)
+        objectness, offsets = self.rpn_head(rpn_features).split(2, dim=1)
+        return anchors, objectness, offsets
+
 # Define the main model
 class SpreadsheetTableFinder(nn.Module):
     def __init__(self):
