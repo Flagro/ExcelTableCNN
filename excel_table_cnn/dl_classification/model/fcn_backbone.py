@@ -12,8 +12,8 @@ class FCNBackbone(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
+        # x = self.conv2(x)
+        # x = self.conv3(x)
         x = self.features(x)  # Apply VGG16 features
         # Assume x is shaped (N, 256, H', W') where H' and W' are downscaled from the original H and W.
         return x  # The features are now ready for the RPN
