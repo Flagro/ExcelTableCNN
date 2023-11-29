@@ -5,8 +5,8 @@ class FCNBackbone(nn.Module):
     def __init__(self, num_features):
         super().__init__()
         self.conv1 = nn.Conv2d(num_features, 64, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)  # Increasing to 256 channels
+        # self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        # self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)  # Increasing to 256 channels
         self.features = models.vgg16(pretrained=True).features[:-1]  # Use VGG16's features up to the second to last layer
         self.out_channels = 512  # Set the correct number of output channels
 
