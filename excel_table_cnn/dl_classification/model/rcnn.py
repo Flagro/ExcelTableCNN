@@ -1,8 +1,24 @@
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.ops import MultiScaleRoIAlign
+from torchvision.models.detection.transform import GeneralizedRCNNTransform
 
 from .rpn import RPN
+
+
+# Create a lightweight transform class that overrides the normalize and resize methods
+class SkipTransform(GeneralizedRCNNTransform):
+    def __init__(self, min_size, max_size, image_mean, image_std):
+        super().__init__(min_size, max_size, image_mean, image_std)
+    
+    def normalize(self, image):
+        # Skip normalization or do your custom normalization if needed
+        return image
+    
+    def resize(self, image, target):
+        # Skip resizing or do your custom resize if needed
+        # Returning the original image and target as is
+        return image, target
 
 
 # Define the custom Faster R-CNN class
@@ -29,3 +45,12 @@ class CustomFasterRCNN(FasterRCNN):
         # Replace the pre-trained head with a new one (number of classes is different)
         in_features = self.roi_heads.box_predictor.cls_score.in_features
         self.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        
+        # Set the custom skip transform as the transform for the CustomFasterRCNN
+        # Choose dummy values for min_size and max_size as they won't have an effect
+        # Choose dummy values for image_mean and image_std as they won't have an effect
+        min_size = (800,)
+        max_size = 1333
+        image_mean = [0.0] * 17  # Adjust depending on your case
+        image_std = [1.0] * 17   # Adjust depending on your case
+        self.transform = SkipTransform(min_size, max_size, image_mean, image_std)
