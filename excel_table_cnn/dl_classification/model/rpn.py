@@ -12,13 +12,13 @@ def get_anchor_generator():
 
 
 class RPN(nn.Module):
-    def __init__(self):
+    def __init__(self, out_channels=256):
         super().__init__()
 
         self.anchor_generator = get_anchor_generator()
 
         # Assuming that the backbone outputs a single feature map "feat1", with 512 channels
-        self.head = RPNHead(512, self.anchor_generator.num_anchors_per_location()[0])
+        self.head = RPNHead(out_channels, self.anchor_generator.num_anchors_per_location()[0])
         
         # Predefined values for proposal matching, these can be fine tuned
         self.proposal_matcher = torch.nn.modules.Module()
