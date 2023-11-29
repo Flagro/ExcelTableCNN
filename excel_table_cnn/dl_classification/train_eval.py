@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 import torch
 
-from model.model import TableDetectionModel
+from .model.model import TableDetectionModel
 
 
 def get_model(num_classes=2):
