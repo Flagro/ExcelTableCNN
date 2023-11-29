@@ -8,15 +8,15 @@ def get_anchor_generator():
     # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
     sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),)
     aspect_ratios = ((0.00390625, 0.0078125, 0.015625, 
-                     0.03125, 0.0625, 0.125, 
-                     0.25, 0.5, 1.0, 2.0, 
-                     4.0, 8.0, 16.0, 32.0, 
-                     64.0, 128.0, 256.0),)
+                      0.03125, 0.0625, 0.125, 
+                      0.25, 0.5, 1.0, 2.0, 
+                      4.0, 8.0, 16.0, 32.0, 
+                      64.0, 128.0, 256.0),)
     return AnchorGenerator(sizes, aspect_ratios)
 
 
 class RPN(nn.Module):
-    def __init__(self, out_channels=256):
+    def __init__(self, out_channels=512):
         super().__init__()
 
         self.anchor_generator = get_anchor_generator()
