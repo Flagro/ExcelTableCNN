@@ -19,6 +19,7 @@ def train_model(model, train_loader, optimizer, num_epochs, device):
     for epoch in range(num_epochs):
         epoch_loss = 0
         for images, targets_list in train_loader:
+            print(images, targets_list)
             image = images[0]
             targets = targets_list[0]
 
