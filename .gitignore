@@ -121,3 +121,4 @@ doc/source/**/generated/
 .env
 data/*
 !data/README.md
+code_snippets.py
