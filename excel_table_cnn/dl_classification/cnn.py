@@ -5,6 +5,8 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.backbone_utils import BackboneWithFPN
 from torchvision.models.detection import anchor_utils
+from torchvision.models.detection.roi_heads import RoIHeads
+from torchvision.ops import RoIAlign
 
 def get_anchor_generator():
     # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
@@ -27,37 +29,31 @@ class FCNBackbone(nn.Module):
         return x
 
 class RPN(nn.Module):
-    def __init__(self, anchor_generator):
+    def __init__(self):
         super().__init__()
-        
-        # Define a simple feature pyramid network
-        # backbone_out_channels = 256  # Example feature size
-        # fpn = FeaturePyramidNetwork(in_channels_list=[backbone_out_channels], out_channels=backbone_out_channels)
-        # rpn_head = RPNHead(fpn.out_channels, anchor_generator.num_anchors_per_location()[0])
-
-        # # RoIAlign layer spanning anchor points
-        # roi_align = MultiScaleRoIAlign(featmap_names=["0", "1", "2", "3"], output_size=7, sampling_ratio=2)
-
-        # rpn_pre_nms_top_n = {"training": 2000, "testing": 1000}
-        # rpn_post_nms_top_n = {"training": 2000, "testing": 1000}
-
-        self.rpn = nn.Sequential(
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, kernel_size=1),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, kernel_size=1),
-            nn.ReLU(),
+        self.anchor_generator = AnchorGenerator(
+            sizes=((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),),
+            aspect_ratios=((1/256, 1/128, 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4, 8, 16, 32, 64, 128, 256),)
         )
-        self.anchor_generator = anchor_generator
-        self.rpn_head = nn.Conv2d(512, self.anchor_generator.num_anchors_per_location()[0] * 2, kernel_size=1)
+        self.head = RoIHeads(
+            box_roi_pool=RoIAlign(output_size=(7, 7), spatial_scale=0.5, sampling_ratio=2),
+            box_head=torch.nn.Linear(256 * 7 * 7, 6),  # Example box head
+            box_predictor=torch.nn.Linear(6, 4),  # Example box predictor
+            fg_iou_thresh=0.5, bg_iou_thresh=0.5,
+            batch_size_per_image=1,
+            positive_fraction=0.25,
+            bbox_reg_weights=None,
+            score_thresh=0.05,
+            nms_thresh=0.5,
+            detections_per_img=1
+        )
 
     def forward(self, images, features, targets=None):
-        # Step 1: RPN to get proposals
-        rpn_features = self.rpn(features)
-        anchors = self.anchor_generator(images, features)
-        objectness, offsets = self.rpn_head(rpn_features).split(2, dim=1)
-        return anchors, objectness, offsets
+        # Normally, the RPN would take the feature maps and targets to provide
+        # proposals. Here we create a dummy array of proposals for simplicity.
+        proposals = [torch.rand((1, 4)) for _ in range(len(images))]
+        # Return proposals, losses
+        return proposals, {}
 
 # Define the main model
 class SpreadsheetTableFinder(nn.Module):
