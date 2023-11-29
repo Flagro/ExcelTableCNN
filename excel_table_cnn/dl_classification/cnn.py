@@ -7,6 +7,9 @@ from torchvision.models.detection.backbone_utils import BackboneWithFPN
 from torchvision.models.detection import anchor_utils
 from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.ops import RoIAlign
+from torchvision.models.detection.rpn import RPNHead, RegionProposalNetwork
+from torchvision.ops import MultiScaleRoIAlign
+
 
 def get_anchor_generator():
     # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
@@ -31,29 +34,41 @@ class FCNBackbone(nn.Module):
 class RPN(nn.Module):
     def __init__(self):
         super().__init__()
+        
+        # Define the anchor sizes and aspect ratios
+        anchor_sizes = tuple((size, ) for size in [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096])
+        aspect_ratios = tuple((1/2**i, 2**i) for i in range(-8, 9))
+        
         self.anchor_generator = AnchorGenerator(
-            sizes=((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),),
-            aspect_ratios=((1/256, 1/128, 1/64, 1/32, 1/16, 1/8, 1/4, 1/2, 1, 2, 4, 8, 16, 32, 64, 128, 256),)
+            sizes=anchor_sizes,
+            aspect_ratios=aspect_ratios
         )
-        self.head = RoIHeads(
-            box_roi_pool=RoIAlign(output_size=(7, 7), spatial_scale=0.5, sampling_ratio=2),
-            box_head=torch.nn.Linear(256 * 7 * 7, 6),  # Example box head
-            box_predictor=torch.nn.Linear(6, 4),  # Example box predictor
-            fg_iou_thresh=0.5, bg_iou_thresh=0.5,
-            batch_size_per_image=1,
-            positive_fraction=0.25,
-            bbox_reg_weights=None,
-            score_thresh=0.05,
-            nms_thresh=0.5,
-            detections_per_img=1
+
+        # Assuming that the backbone outputs a single feature map "feat1", with 512 channels
+        self.head = RPNHead(512, self.anchor_generator.num_anchors_per_location()[0])
+        
+        # Predefined values for proposal matching, these can be fine tuned
+        self.proposal_matcher = torch.nn.modules.Module()
+        
+        self.fg_bg_sampler = torch.nn.modules.Module()
+        
+        self.box_coder = torch.nn.modules.Module()
+        
+        # The RegionProposalNetwork brings together the anchor generator and the RPN head
+        self.rpn = RegionProposalNetwork(
+            self.anchor_generator, self.head,
+            fg_iou_thresh=0.7, bg_iou_thresh=0.3,
+            batch_size_per_image=256, positive_fraction=0.5,
+            pre_nms_top_n=dict(training=2000, testing=1000),
+            post_nms_top_n=dict(training=2000, testing=1000),
+            nms_thresh=0.7,
         )
 
     def forward(self, images, features, targets=None):
-        # Normally, the RPN would take the feature maps and targets to provide
-        # proposals. Here we create a dummy array of proposals for simplicity.
-        proposals = [torch.rand((1, 4)) for _ in range(len(images))]
-        # Return proposals, losses
-        return proposals, {}
+        # Delegate to the internal RegionProposalNetwork the work
+        proposals, proposal_losses = self.rpn(images, features, targets)
+
+        return proposals, proposal_losses
 
 # Define the main model
 class SpreadsheetTableFinder(nn.Module):
