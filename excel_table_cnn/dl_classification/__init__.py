@@ -1,3 +1,3 @@
-__all__ = ['cnn', 'dl_classifier', 'tensors']
+__all__ = ['tensors', 'train_eval']
 
 from .tensors import SpreadsheetDataset
