@@ -16,7 +16,7 @@ class RPN(RegionProposalNetwork):
         anchor_generator = get_anchor_generator()
 
         # Assuming that the backbone outputs a single feature map "feat1", with 512 channels
-        rpn_head = RPNHead(out_channels, self.anchor_generator.num_anchors_per_location()[0])
+        rpn_head = RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0])
         
         # Predefined values for proposal matching, these can be fine tuned
         # self.proposal_matcher = torch.nn.modules.Module()
