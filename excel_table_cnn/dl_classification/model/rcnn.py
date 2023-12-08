@@ -35,7 +35,7 @@ class CustomFasterRCNN(FasterRCNN):
         )
         
         # Instantiate the Faster R-CNN model using our backbone, our custom RPN, and RoI Align
-        super(CustomFasterRCNN, self).__init__(
+        super().__init__(
             backbone=backbone,
             num_classes=num_classes,
             rpn=rpn,
