@@ -36,7 +36,7 @@ class CustomFasterRCNN(FasterRCNN):
         # Initialize the RPN (Region Proposal Network)
 
         anchor_generator = get_anchor_generator()
-        rpn_head = RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0])
+        rpn_head = RPNHead(512, anchor_generator.num_anchors_per_location()[0])
         
         # Define the box ROI Pooler using RoIAlign
         roi_pooler = MultiScaleRoIAlign(
