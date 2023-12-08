@@ -18,13 +18,9 @@ def train_model(model, train_loader, optimizer, num_epochs, device):
     
     for epoch in range(num_epochs):
         epoch_loss = 0
-        for images, targets_list in train_loader:
-            image = images[0]
-            targets = targets_list[0]
-
-            # Since the model expects a list of images, and list of targets, we repackage them
-            images = [image.to(device)]  # Make it a list again to fit model input expectations
-            targets = [{k: v.to(device) for k, v in targets.items()}]  # List of one dictionary
+        for images, targets in train_loader:
+            images = [image.to(device) for image in images]
+            targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
             
             # Reset gradients
             optimizer.zero_grad()
