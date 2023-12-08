@@ -12,8 +12,10 @@ def get_anchor_generator():
 
 
 def get_rpn_params(out_channels=512):
-    return {"anchor_generator": get_anchor_generator(),
-            "head": RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0]),
+    anchor_generator = get_anchor_generator()
+    rpn_head = RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0])
+    return {"anchor_generator": anchor_generator,
+            "head": rpn_head,
             "fg_iou_thresh": 0.7,
             "bg_iou_thresh": 0.3,
             "batch_size_per_image": 256,
