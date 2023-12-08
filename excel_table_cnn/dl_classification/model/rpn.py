@@ -11,6 +11,18 @@ def get_anchor_generator():
     return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
 
 
+def get_rpn_params(out_channels=512):
+    return {"anchor_generator": get_anchor_generator(),
+            "head": RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0]),
+            "fg_iou_thresh": 0.7,
+            "bg_iou_thresh": 0.3,
+            "batch_size_per_image": 256,
+            "positive_fraction": 0.5,
+            "pre_nms_top_n": dict(training=2000, testing=1000),
+            "post_nms_top_n": dict(training=2000, testing=1000),
+            "nms_thresh": 0.7}
+
+
 class RPN(RegionProposalNetwork):
     def __init__(self, out_channels=512):
         anchor_generator = get_anchor_generator()

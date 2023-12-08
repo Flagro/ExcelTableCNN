@@ -3,7 +3,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.ops import MultiScaleRoIAlign
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 
-from .rpn import RPN
+from .rpn import RPN, get_rpn_params
 
 
 # Create a lightweight transform class that overrides the normalize and resize methods
@@ -26,6 +26,7 @@ class CustomFasterRCNN(FasterRCNN):
     def __init__(self, backbone, num_classes):
         # Initialize the RPN (Region Proposal Network)
         rpn = RPN()
+        rpn_params = get_rpn_params()
         
         # Define the box ROI Pooler using RoIAlign
         roi_pooler = MultiScaleRoIAlign(
@@ -38,9 +39,10 @@ class CustomFasterRCNN(FasterRCNN):
         super().__init__(
             backbone=backbone,
             num_classes=num_classes,
-            rpn=rpn,
+            # rpn=rpn,
             # rpn_anchor_generator=rpn.anchor_generator,
             box_roi_pool=roi_pooler,
+            **rpn_params
         )
 
         # Replace the pre-trained head with a new one (number of classes is different)
