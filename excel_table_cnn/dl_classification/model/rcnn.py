@@ -2,10 +2,15 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.ops import MultiScaleRoIAlign
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
-
-from .rpn import RPN, get_rpn_params
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.rpn import RPNHead, RegionProposalNetwork
+
+
+def get_anchor_generator():
+    # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
+    sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),) # One sub-tuple for one feature level
+    aspect_ratios = ((0.125,),) # One sub-tuple matching the one feature level
+    return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
 
 
 # Create a lightweight transform class that overrides the normalize and resize methods
@@ -21,13 +26,6 @@ class SkipTransform(GeneralizedRCNNTransform):
         # Skip resizing or do your custom resize if needed
         # Returning the original image and target as is
         return image, target
-
-
-def get_anchor_generator():
-    # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
-    sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),) # One sub-tuple for one feature level
-    aspect_ratios = ((0.125,),) # One sub-tuple matching the one feature level
-    return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
 
 
 # Define the custom Faster R-CNN class
