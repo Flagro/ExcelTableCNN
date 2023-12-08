@@ -47,7 +47,9 @@ def evaluate_model(model, test_loader, device):
     model.eval()  # Set the model in inference mode
     
     eval_loss = 0
-    for images, targets in test_loader:
+    for images, targets_list in test_loader:
+        image = images[0]
+        targets = targets_list[0]
         images = [image.to(device)]
         targets = [{k: v.to(device) for k, v in t.items()}]
         
