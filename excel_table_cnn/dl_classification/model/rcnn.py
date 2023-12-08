@@ -4,6 +4,8 @@ from torchvision.ops import MultiScaleRoIAlign
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 
 from .rpn import RPN, get_rpn_params
+from torchvision.models.detection.rpn import AnchorGenerator
+from torchvision.models.detection.rpn import RPNHead, RegionProposalNetwork
 
 
 # Create a lightweight transform class that overrides the normalize and resize methods
