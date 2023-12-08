@@ -9,7 +9,11 @@ from torchvision.models.detection.rpn import RPNHead, RegionProposalNetwork
 def get_anchor_generator():
     # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
     sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),) # One sub-tuple for one feature level
-    aspect_ratios = ((0.125,),) # One sub-tuple matching the one feature level
+    aspect_ratios = ((0.00390625, 0.0078125, 0.015625, 
+                      0.03125, 0.0625, 0.125, 
+                      0.25, 0.5, 1.0, 2.0, 
+                      4.0, 8.0, 16.0, 32.0, 
+                      64.0, 128.0, 256.0),)
     return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
 
 
