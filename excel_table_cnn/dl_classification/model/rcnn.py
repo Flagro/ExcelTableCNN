@@ -44,12 +44,13 @@ class CustomFasterRCNN(FasterRCNN):
 
         # Replace the pre-trained head with a new one (number of classes is different)
         in_features = self.roi_heads.box_predictor.cls_score.in_features
-        self.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        
+        # self.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         
         # Set the custom skip transform as the transform for the CustomFasterRCNN
         # Choose dummy values for min_size and max_size as they won't have an effect
         # Choose dummy values for image_mean and image_std as they won't have an effect
-        min_size = (800,)
+        min_size = (100,)
         max_size = 1333
         image_mean = [0.0] * 17  # Adjust depending on your case
         image_std = [1.0] * 17   # Adjust depending on your case
