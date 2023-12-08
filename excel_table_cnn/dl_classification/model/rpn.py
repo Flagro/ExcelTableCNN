@@ -8,7 +8,7 @@ def get_anchor_generator():
     # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
     sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),) # One sub-tuple for one feature level
     aspect_ratios = ((0.125,),) # One sub-tuple matching the one feature level
-    return AnchorGenerator(sizes, aspect_ratios)
+    return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
 
 
 class RPN(nn.Module):
