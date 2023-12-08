@@ -42,7 +42,7 @@ class CustomFasterRCNN(FasterRCNN):
             box_roi_pool=roi_pooler,
         )
 
-        self.rpn_anchor_generator=rpn.anchor_generator,
+        # self.rpn_anchor_generator=rpn.anchor_generator,
 
         # Replace the pre-trained head with a new one (number of classes is different)
         in_features = self.roi_heads.box_predictor.cls_score.in_features
