@@ -39,6 +39,7 @@ class CustomFasterRCNN(FasterRCNN):
             backbone=backbone,
             num_classes=num_classes,
             rpn=rpn,
+            rpn_anchor_generator=rpn.anchor_generator,
             box_roi_pool=roi_pooler,
         )
 
