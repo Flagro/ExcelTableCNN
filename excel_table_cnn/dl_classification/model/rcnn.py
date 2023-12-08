@@ -25,7 +25,7 @@ class SkipTransform(GeneralizedRCNNTransform):
 class CustomFasterRCNN(FasterRCNN):
     def __init__(self, backbone, num_classes):
         # Initialize the RPN (Region Proposal Network)
-        rpn = RPN()
+        rpn = RPN().rpn
         
         # Define the box ROI Pooler using RoIAlign
         roi_pooler = MultiScaleRoIAlign(
@@ -39,7 +39,7 @@ class CustomFasterRCNN(FasterRCNN):
             backbone=backbone,
             num_classes=num_classes,
             rpn=rpn,
-            rpn_anchor_generator=rpn.anchor_generator,
+            # rpn_anchor_generator=rpn.anchor_generator,
             box_roi_pool=roi_pooler,
         )
 
