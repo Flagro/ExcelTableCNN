@@ -48,8 +48,8 @@ def evaluate_model(model, test_loader, device):
     
     eval_loss = 0
     for images, targets in test_loader:
-        images = list(image.to(device) for image in images)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        images = [image.to(device)]
+        targets = [{k: v.to(device) for k, v in t.items()}]
         
         with torch.no_grad():
             # Forward pass
