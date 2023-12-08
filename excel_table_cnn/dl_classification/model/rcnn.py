@@ -21,12 +21,20 @@ class SkipTransform(GeneralizedRCNNTransform):
         return image, target
 
 
+def get_anchor_generator():
+    # Use predefined sizes and aspect ratios. The sizes should be tuples of (min, max).
+    sizes = ((8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096),) # One sub-tuple for one feature level
+    aspect_ratios = ((0.125,),) # One sub-tuple matching the one feature level
+    return AnchorGenerator(sizes=sizes, aspect_ratios=aspect_ratios)
+
+
 # Define the custom Faster R-CNN class
 class CustomFasterRCNN(FasterRCNN):
     def __init__(self, backbone, num_classes):
         # Initialize the RPN (Region Proposal Network)
-        rpn = RPN()
-        rpn_params = get_rpn_params()
+
+        anchor_generator = get_anchor_generator()
+        rpn_head = RPNHead(out_channels, anchor_generator.num_anchors_per_location()[0])
         
         # Define the box ROI Pooler using RoIAlign
         roi_pooler = MultiScaleRoIAlign(
@@ -39,9 +47,15 @@ class CustomFasterRCNN(FasterRCNN):
         super().__init__(
             backbone=backbone,
             num_classes=num_classes,
-            # rpn=rpn,
-            # rpn_anchor_generator=rpn.anchor_generator,
-            **rpn_params,
+            anchor_generator=anchor_generator,
+            head=rpn_head,
+            fg_iou_thresh=0.7,
+            bg_iou_thresh=0.3,
+            batch_size_per_image=256,
+            positive_fraction=0.5,
+            pre_nms_top_n=dict(training=2000, testing=1000),
+            post_nms_top_n=dict(training=2000, testing=1000),
+            nms_thresh=0.7,
             box_roi_pool=roi_pooler,
         )
 
