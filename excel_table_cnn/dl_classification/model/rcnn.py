@@ -38,6 +38,7 @@ class CustomFasterRCNN(FasterRCNN):
         super(CustomFasterRCNN, self).__init__(
             backbone=backbone,
             num_classes=num_classes,
+            rpn_anchor_generator=rpn.anchor_generator,
             rpn=rpn,
             box_roi_pool=roi_pooler,
         )
