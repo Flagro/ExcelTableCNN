@@ -42,12 +42,9 @@ class CustomFasterRCNN(FasterRCNN):
             box_roi_pool=roi_pooler,
         )
 
-        # self.rpn_anchor_generator=rpn.anchor_generator,
-
         # Replace the pre-trained head with a new one (number of classes is different)
         in_features = self.roi_heads.box_predictor.cls_score.in_features
-        
-        # self.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        self.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         
         # Set the custom skip transform as the transform for the CustomFasterRCNN
         # Choose dummy values for min_size and max_size as they won't have an effect
