@@ -20,9 +20,7 @@ def get_bounding_box(table_ranges):
 class SpreadsheetDataset(Dataset):
     def __init__(self, tensors: DataframeTensors):
         self.tensors = tensors
-
-    def get_num_cell_features(self):
-        return self.data[0].shape[0]
+        self.num_cell_features = tensors.num_cell_features
 
     def __len__(self):
         # The length of the dataset is the number of spreadsheets
