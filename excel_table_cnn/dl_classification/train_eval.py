@@ -48,7 +48,7 @@ def train_one_epoch(model, dataloader, optimizer, device="cpu"):
     return sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0.0
 
 
-def train_model(model, train_dataloader, optimizer, num_epochs, device):
+def train_model(model, train_dataloader, num_epochs, device="cpu"):
     model.to(device)
     optimizer = optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
 
