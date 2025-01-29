@@ -7,8 +7,8 @@ from .tensors import DataframeTensors
 def get_bounding_box(table_ranges):
     boxes = torch.tensor(
         [
-            [x_min, y_min, x_max, y_max]
-            for (x_min, y_min), (x_max, y_max) in table_ranges
+            [min_col, min_row, max_col, max_row]  # x_min, y_min, x_max, y_max
+            for min_col, min_row, max_col, max_row in table_ranges
         ],
         dtype=torch.float32,
     )

@@ -15,26 +15,13 @@ def parse_table_range(table_range):
     # Convert table range string to numerical coordinates
     # Placeholder for actual implementation
     min_col, min_row, max_col, max_row = range_boundaries(table_range)
-    return [(min_row - 1, min_col - 1), (max_row - 1, max_col - 1)]
+    # Match the R-CNN convention: x_min, y_min, x_max, y_max
+    return [min_col - 1, min_row - 1, max_col - 1, max_row - 1]
 
 
 def preprocess_features(row):
     # Convert the pandas Series directly to a tensor
     return torch.tensor(row.astype(float).values, dtype=torch.float32)
-
-
-def get_bounding_box(table_ranges):
-    boxes = torch.tensor(
-        [
-            [x_min, y_min, x_max, y_max]
-            for (x_min, y_min), (x_max, y_max) in table_ranges
-        ],
-        dtype=torch.float32,
-    )
-    labels = torch.ones(
-        (boxes.shape[0],), dtype=torch.int64
-    )  # Assuming '1' is the label for tables
-    return {"boxes": boxes, "labels": labels}
 
 
 class DataframeTensors:
