@@ -122,3 +122,4 @@ doc/source/**/generated/
 data/*
 !data/README.md
 code_snippets.py
+.venv
