@@ -2,8 +2,8 @@ from torch.utils.data import DataLoader
 import torch
 import torch.optim as optim
 
-from .model.model import TableDetectionModel
-from .experimental_model.model import TableDetectionModel as ExperimentalModel
+from ..model.model import TableDetectionModel
+from ..experimental_model.model import TableDetectionModel as ExperimentalModel
 
 
 def get_model(in_channels=3, debug=False):
