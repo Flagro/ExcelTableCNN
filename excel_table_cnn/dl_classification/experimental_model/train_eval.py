@@ -2,21 +2,7 @@ from torch.utils.data import DataLoader
 import torch
 import torch.optim as optim
 
-from ..model.model import TableDetectionModel
-from ..experimental_model.model import TableDetectionModel as ExperimentalModel
-
-
-def get_model(in_channels=3, debug=False):
-    model = TableDetectionModel(in_channels)
-    return model
-
-
-def get_dataloader(dataset):
-    def collate_fn(batch):
-        return tuple(zip(*batch))
-
-    loader = DataLoader(dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    return loader
+from .model import TableDetectionModel as ExperimentalModel
 
 
 def get_experimental_model(in_channels=3, debug=False):

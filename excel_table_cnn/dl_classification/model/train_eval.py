@@ -1,9 +1,8 @@
-from torch.utils.data import DataLoader
 import torch
+from torch.utils.data import DataLoader
 from collections import defaultdict
-import numpy as np
 
-from .model.model import TableDetectionModel
+from .model import TableDetectionModel
 
 
 def get_model(num_classes=2):
@@ -11,35 +10,43 @@ def get_model(num_classes=2):
     return model
 
 
+def get_dataloader(dataset):
+    def collate_fn(batch):
+        return tuple(zip(*batch))
+
+    loader = DataLoader(dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
+    return loader
+
+
 def train_model(model, train_loader, optimizer, num_epochs, device):
     # Send the model to the device (GPU or CPU)
     model.to(device)
-    
+
     # Set the model in training mode
     model.train()
-    
+
     for epoch in range(num_epochs):
         epoch_loss = 0
         for images, targets in train_loader:
             images = [image.to(device) for image in images]
             targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-            
+
             # Reset gradients
             optimizer.zero_grad()
-            
+
             # Forward pass
             loss_dict = model(images, targets)
-            
+
             losses = sum(loss for loss in loss_dict.values())
             epoch_loss += losses.item()
-            
+
             # Backpropagation
             losses.backward()
             optimizer.step()
-        
+
         print(f"Epoch {epoch}: Loss: {epoch_loss / len(train_loader)}")
 
-        
+
 def calculate_iou(pred_box, gt_box):
     # Determine the coordinates of the intersection rectangle
     xA = max(pred_box[0], gt_box[0])
@@ -76,10 +83,10 @@ def evaluate_model(model, test_loader, device, iou_threshold=0.5):
 
             for i, output in enumerate(outputs):
                 # Assuming single class; adapt as needed for multiple classes
-                for box, score in zip(output['boxes'], output['scores']):
+                for box, score in zip(output["boxes"], output["scores"]):
                     all_detections[i].append((box.cpu().numpy(), score.item()))
 
-                for gt_box in targets[i]['boxes']:
+                for gt_box in targets[i]["boxes"]:
                     all_ground_truths[i].append(gt_box.cpu().numpy())
 
     # Calculate TP, FP, FN for each image
