@@ -1,5 +1,0 @@
-py7zr
-openpyxl
-pandas
-numpy
-tqdm

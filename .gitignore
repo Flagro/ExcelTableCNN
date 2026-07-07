@@ -123,3 +123,5 @@ data/*
 !data/README.md
 code_snippets.py
 .venv
+docs/*
+*.pt
