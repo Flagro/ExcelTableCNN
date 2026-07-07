@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "excel-table-cnn"
+version = "0.2.0"
+description = "Open-source spreadsheet table detection with CNNs"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Anton Potapov" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "openpyxl>=3.1",
+    "xlrd>=2.0",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "tqdm>=4.60",
+    "requests>=2.28",
+    "py7zr>=0.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "xlwt>=1.3",  # writes .xls fixtures for the xlrd-featurizer tests
+]
+
+[project.scripts]
+excel-table-cnn-train = "excel_table_cnn.training.train:main"
+excel-table-cnn-eval = "excel_table_cnn.evaluation.evaluate:main"
+excel-table-cnn-detect = "excel_table_cnn.inference:main"
+
+[project.urls]
+Repository = "https://github.com/Flagro/ExcelTableCNN"
+
+[tool.setuptools.packages.find]
+include = ["excel_table_cnn*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: long-running tests (overfit smoke test); deselect with -m 'not slow'",
+]
