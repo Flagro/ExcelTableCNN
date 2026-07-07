@@ -1,19 +1,17 @@
-"""Precise boundary refinement (PBR) — TableSense-inspired, discretized.
+"""Precise boundary refinement (PBR): snap detected edges to exact cells.
 
-The paper's PBR observes that generic box regression cannot deliver
-cell-exact boundaries and refines each edge from features local to that
-edge, with a loss that plateaus beyond a tolerance of k cells. This module
-keeps that structure — per-edge refinement, band-shaped receptive fields,
-hard k-cell tolerance — with two deliberate differences:
+Generic box regression cannot deliver cell-exact boundaries; this module
+refines each edge from features local to that edge, within a hard tolerance
+of k cells:
 
-- the offset is **classified over the 2k+1 integer positions** instead of
+- the offset is **classified over the 2k+1 integer positions** rather than
   regressed: cell boundaries are discrete, and argmax-snapping directly
   optimizes EoB-0 (exact-boundary accuracy);
 - it is trained on **jittered ground-truth boxes** (each edge displaced by
   Uniform{-k..k}) rather than inside the RoI head, which teaches the same
   skill — recover the true boundary from a near-miss — without surgery on
-  torchvision internals. Offsets beyond ±k cannot occur in training, which
-  is exactly the paper's plateau: no gradient outside the tolerance window.
+  torchvision internals. Offsets beyond ±k cannot occur in training, so
+  there is no gradient outside the tolerance window.
 """
 
 from typing import Tuple

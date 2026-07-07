@@ -1,15 +1,14 @@
 """Fully convolutional backbone for spreadsheet tensors.
 
-Stride 1 throughout — the paper's key adaptation: cell-level resolution is
-preserved so boundaries can be located exactly. GroupNorm instead of
-BatchNorm because detection training runs with batch size 1.
+Stride 1 throughout: cell-level resolution is preserved so boundaries can be
+located exactly. GroupNorm instead of BatchNorm because detection training
+runs with batch size 1.
 
 With ``use_grid_context=True`` (default) the backbone additionally exploits
-grid structure — this project's own extension over TableSense (see
-``grid_context.py``): derived row/column priors, a dilated middle stage
-(receptive field ~11 → ~30+ cells at zero parameter cost; corpus median
-table height is 21 rows), and an axial strip-pooling block that gives every
-cell a summary of its entire row and column.
+grid structure (see ``grid_context.py``): derived row/column priors, a
+dilated middle stage (receptive field ~11 → ~30+ cells at zero parameter
+cost; corpus median table height is 21 rows), and an axial strip-pooling
+block that gives every cell a summary of its entire row and column.
 """
 
 import torch.nn as nn

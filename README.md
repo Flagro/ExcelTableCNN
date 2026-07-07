@@ -293,7 +293,7 @@ the EoB metric, the evaluation harness, the feature cache, the training
 loop, and inference output. The slow overfit test is the project's core
 gate: the model must overfit a single synthetic sheet and reproduce its
 table at **EoB-0 (cell-exact)** — proving the whole pipeline, PBR snapping
-included, can learn. CI runs both jobs on every push.
+included, can learn.
 
 ## Roadmap
 

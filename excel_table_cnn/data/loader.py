@@ -2,8 +2,7 @@
 
 All URLs and checksums below were verified (2026-07-07) against the figshare
 API for project 20116 "Versioned Spreadsheet Corpora" (author Wensheng Dou,
-all articles CC0) — the project referenced by Microsoft's TableSense README
-as the source of the annotation corpora.
+all articles CC0) — the upstream source of the annotated corpora.
 
 Note: figshare's downloader sometimes answers non-browser clients with an
 empty ``202 Accepted`` response. If the automatic download fails, download

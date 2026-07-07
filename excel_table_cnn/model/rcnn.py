@@ -13,7 +13,7 @@ from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import MultiScaleRoIAlign
 
-# Tuned on the 2,613 annotated TableSense/VEnron2 ground-truth boxes via
+# Tuned on the 2,613 annotated VEnron2 ground-truth boxes via
 # excel_table_cnn.data.census (2026-07): width p50=8 p95=31; height p50=21
 # p95=167; h/w ratio p50=2.5 p95=26 — spreadsheet tables are tall. This
 # 8x9 lattice covers 99.5% of GT boxes at IoU>=0.5 and 71.3% at IoU>=0.7
@@ -43,7 +43,7 @@ class CustomFasterRCNN(FasterRCNN):
         box_score_thresh: float = 0.5,
     ):
         anchor_generator = AnchorGenerator(sizes=anchor_sizes, aspect_ratios=aspect_ratios)
-        # 14x14 pooling per the paper — finer boundary evidence per RoI.
+        # 14x14 pooling — finer boundary evidence per RoI.
         roi_pooler = MultiScaleRoIAlign(
             featmap_names=["0"], output_size=14, sampling_ratio=2
         )

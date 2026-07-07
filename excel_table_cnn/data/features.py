@@ -1,10 +1,9 @@
 """Cell featurization: turn an openpyxl worksheet into an (H, W, C) float array.
 
 v2 scheme, 30 channels per cell (``FEATURE_NAMES`` gives the order): the
-17 original binary channels plus the TableSense paper's value-string,
-data-format and cell-format groups (string statistics, number-format
-template classification, merge direction, non-default colors). Non-binary
-channels are normalized to [0, 1].
+17 original binary channels plus value-string, data-format and cell-format
+groups (string statistics, number-format template classification, merge
+direction, non-default colors). Non-binary channels are normalized to [0, 1].
 
 The array always starts at A1 so that annotation coordinates remain valid
 without offset bookkeeping; trailing all-default rows/columns are trimmed

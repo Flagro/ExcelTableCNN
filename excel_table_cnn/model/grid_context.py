@@ -12,9 +12,6 @@ whole row). Two cheap components exploit that grid structure directly:
   grids): each position receives a learned summary of its *entire row and
   entire column* — global context along exactly the two axes that matter in
   a grid, far cheaper than attention.
-
-Both are known CV techniques individually; their combination on cell-feature
-tensors is absent from TableSense.
 """
 
 import torch

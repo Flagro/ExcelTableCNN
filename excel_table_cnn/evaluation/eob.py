@@ -1,9 +1,9 @@
-"""Error-of-Boundary (EoB) metric from the TableSense paper.
+"""Error-of-Boundary (EoB) metric.
 
 EoB of a (prediction, ground truth) pair is the maximum absolute deviation of
 the four boundaries, in cells. A detection is correct at threshold t if
-EoB <= t; the paper reports EoB-0 (exact) and EoB-2. Both boxes must use the
-same convention (this package: half-open cell coordinates), which makes the
+EoB <= t; we report EoB-0 (exact) and EoB-2. Both boxes must use the same
+convention (this package: half-open cell coordinates), which makes the
 deviations identical to the closed-range ones.
 """
 
