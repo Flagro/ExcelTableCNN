@@ -256,12 +256,24 @@ reference, the TableSense paper reports EoB-2 recall 91.3% / precision 86.5%,
 trained on 10,220 hand-labeled sheets; this project trains on the much
 smaller VEnron2 annotation set, so expect substantially lower numbers.
 
-Measured baseline (2026-07): a 16-minute CPU run (239 training sheets,
-40 epochs, `--max-rows 512 --max-cols 128`) reaches **EoB-2 recall 23.9% /
-precision 41.0%** on a held-out 30-sheet VEnron2 test split, with EoB-0
-at zero — exact boundaries are what the roadmap's PBR head is for. Treat
-this as the floor: more sheets, more epochs, and the Phase-4 accuracy work
-all remain on the table.
+Measured results (2026-07, identical config for all rows: 239 training
+sheets, 40 epochs, seed 42, `--max-rows 512 --max-cols 128`, CPU; evaluated
+on the same held-out 30-sheet / 67-table VEnron2 split at threshold 0.5):
+
+| Configuration | EoB-0 recall / precision | EoB-2 recall / precision |
+|---|---|---|
+| v1 baseline (17 binary channels) | 0 / 0 | 23.9% / 41.0% |
+| \+ paper levers (30ch, tuned anchors, 14×14) | 0 / 0 | 19.4% / 24.1% |
+| \+ PBR boundary snapping | 10.4% / 14.3% | 29.9% / 40.8% |
+| **\+ grid-context backbone (full model)** | **16.4% / 25.6%** | **40.3% / 62.8%** |
+
+Three honest takeaways: the paper's capacity levers alone *regressed* at
+this tiny data scale (they were designed against 10,220 training sheets);
+PBR both unlocked exact boundaries and repaired the regression; and the
+grid-context backbone — this project's own component — delivered the
+largest single jump, halving false positives (29 → 16). Expect all rows to
+rise substantially with a full-corpus GPU run; the paper's reference is
+EoB-2 91.3% / 86.5% on 25× more training data.
 
 ## Testing
 
