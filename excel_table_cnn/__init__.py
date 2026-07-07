@@ -4,8 +4,9 @@ An independent open-source reimplementation inspired by the TableSense paper
 (Dong et al., AAAI 2019, arXiv:2106.13500).
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
+from .data.census import box_census, lattice_coverage
 from .data.features import FEATURE_NAMES, NUM_FEATURES, featurize_sheet
 from .data.pipeline import build_samples, build_sheet_sample, get_train_test
 from .data.workbook import UnsupportedFormatError, WorkbookReader, load_sheet_array
@@ -24,6 +25,8 @@ from .training.train import TrainConfig, load_checkpoint, save_checkpoint, train
 
 __all__ = [
     "__version__",
+    "box_census",
+    "lattice_coverage",
     "FEATURE_NAMES",
     "NUM_FEATURES",
     "featurize_sheet",

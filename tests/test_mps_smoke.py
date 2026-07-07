@@ -8,6 +8,7 @@ M-series CPU cores for this small model; see excel_table_cnn.device).
 import pytest
 import torch
 
+from excel_table_cnn.data.features import NUM_FEATURES
 from excel_table_cnn.model.detector import build_model
 from excel_table_cnn.training.dataset import SpreadsheetDataset
 from .conftest import make_synthetic_sample
@@ -26,7 +27,7 @@ def test_train_and_eval_steps_run_on_mps():
     image = image.to(device)
     target = {k: v.to(device) for k, v in target.items()}
 
-    model = build_model(in_channels=17, box_score_thresh=0.0).to(device)
+    model = build_model(in_channels=NUM_FEATURES, box_score_thresh=0.0).to(device)
     model.train()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     for _ in range(3):

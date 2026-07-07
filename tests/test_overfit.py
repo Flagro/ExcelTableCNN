@@ -9,6 +9,7 @@ import pytest
 import torch
 
 from excel_table_cnn.evaluation.eob import eob
+from excel_table_cnn.data.features import NUM_FEATURES
 from excel_table_cnn.model.detector import build_model
 from excel_table_cnn.training.dataset import SpreadsheetDataset
 from excel_table_cnn.training.train import TrainConfig, train_model
@@ -21,7 +22,7 @@ GT_BOX = (3, 5, 11, 21)
 def test_overfit_single_sheet():
     sample = make_synthetic_sample(height=30, width=15, box=GT_BOX)
     dataset = SpreadsheetDataset([sample])
-    model = build_model(in_channels=17, box_score_thresh=0.05)
+    model = build_model(in_channels=NUM_FEATURES, box_score_thresh=0.05)
 
     config = TrainConfig(
         epochs=250,  # 1 sample per epoch = 250 steps
@@ -49,4 +50,5 @@ def test_overfit_single_sheet():
     assert len(output["boxes"]) > 0, "overfit model detects nothing on its own sheet"
     top_box = output["boxes"][int(output["scores"].argmax())].tolist()
     error = eob(top_box, GT_BOX)
-    assert error <= 1, f"top detection {top_box} vs GT {GT_BOX}: EoB={error}"
+    # With the PBR snapping head the gate demands cell-exact boundaries.
+    assert error == 0, f"top detection {top_box} vs GT {GT_BOX}: EoB={error}"

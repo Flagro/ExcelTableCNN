@@ -26,7 +26,10 @@ from ..model.detector import TableDetectionModel, build_model
 
 logger = logging.getLogger(__name__)
 
-LOSS_KEYS = ("loss_objectness", "loss_rpn_box_reg", "loss_classifier", "loss_box_reg")
+LOSS_KEYS = (
+    "loss_objectness", "loss_rpn_box_reg", "loss_classifier", "loss_box_reg",
+    "loss_pbr",  # absent when the model is built with use_pbr=False
+)
 
 
 @dataclass
@@ -65,6 +68,7 @@ def save_checkpoint(model: TableDetectionModel, path: str, **extra) -> None:
             "state_dict": model.state_dict(),
             "in_channels": model.in_channels,
             "num_classes": model.num_classes,
+            "config": model.config,
             "feature_names": list(FEATURE_NAMES),
             **extra,
         },
@@ -72,10 +76,11 @@ def save_checkpoint(model: TableDetectionModel, path: str, **extra) -> None:
     )
 
 
-def load_checkpoint(path: str, device: str = "cpu", **rcnn_kwargs) -> TableDetectionModel:
+def load_checkpoint(path: str, device: str = "cpu", **overrides) -> TableDetectionModel:
     checkpoint = torch.load(path, map_location=device, weights_only=True)
+    kwargs = {**checkpoint.get("config", {}), **overrides}
     model = build_model(
-        checkpoint["in_channels"], num_classes=checkpoint["num_classes"], **rcnn_kwargs
+        checkpoint["in_channels"], num_classes=checkpoint["num_classes"], **kwargs
     )
     model.load_state_dict(checkpoint["state_dict"])
     return model.to(device)
@@ -213,6 +218,11 @@ def main(argv: Optional[List[str]] = None) -> None:
                         help="cap featurized sheet height (cells); lower = faster/less RAM")
     parser.add_argument("--max-cols", type=int, default=None,
                         help="cap featurized sheet width (cells)")
+    parser.add_argument("--pbr", action=argparse.BooleanOptionalAction, default=True,
+                        help="PBR boundary-snapping head (--no-pbr to ablate)")
+    parser.add_argument("--grid-context", action=argparse.BooleanOptionalAction,
+                        default=True,
+                        help="grid-context backbone (--no-grid-context to ablate)")
     parser.add_argument("--no-eval", action="store_true",
                         help="skip evaluation on the test split after training")
     args = parser.parse_args(argv)
@@ -240,7 +250,9 @@ def main(argv: Optional[List[str]] = None) -> None:
     logger.info("Training on %d sheets (skipped %d)",
                 len(train_dataset), len(train_dataset.skipped))
 
-    model = build_model(in_channels=NUM_FEATURES)
+    model = build_model(
+        in_channels=NUM_FEATURES, use_pbr=args.pbr, use_grid_context=args.grid_context
+    )
     config = TrainConfig(
         epochs=args.epochs, lr=args.lr, lr_step_size=args.lr_step_size,
         device=str(device), seed=args.seed,

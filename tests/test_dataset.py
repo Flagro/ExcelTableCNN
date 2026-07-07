@@ -1,5 +1,6 @@
 import torch
 
+from excel_table_cnn.data.features import NUM_FEATURES
 from excel_table_cnn.training.dataset import SpreadsheetDataset, collate_fn
 from .conftest import make_synthetic_sample
 
@@ -8,11 +9,11 @@ def test_getitem_shapes_and_labels():
     sample = make_synthetic_sample(height=20, width=10, box=(2, 3, 8, 9))
     dataset = SpreadsheetDataset([sample])
     tensor, target = dataset[0]
-    assert tensor.shape == (17, 20, 10)
+    assert tensor.shape == (NUM_FEATURES, 20, 10)
     assert tensor.dtype == torch.float32
     assert target["boxes"].shape == (1, 4)
     assert target["labels"].tolist() == [1]
-    assert dataset.num_cell_features == 17
+    assert dataset.num_cell_features == NUM_FEATURES
 
 
 def test_out_of_bounds_boxes_clamped():

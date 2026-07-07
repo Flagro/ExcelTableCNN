@@ -119,6 +119,77 @@ def test_used_range_cap_warns_and_clips(tmp_path, caplog):
 def test_feature_names_stable():
     """Channel order is a compatibility contract for cached tensors and
     checkpoints — changing it must be a deliberate, version-bumped act."""
-    assert NUM_FEATURES == 17
+    assert NUM_FEATURES == 30
     assert FEATURE_NAMES[0] == "is_empty"
+    assert FEATURE_NAMES[17] == "string_length"  # v1 prefix preserved
     assert len(set(FEATURE_NAMES)) == NUM_FEATURES
+
+
+def test_value_string_statistics(toy_features):
+    b2 = cell(toy_features, "B2")  # "Name"
+    assert 0 < b2[feature_index("string_length")] < 1
+    assert b2[feature_index("letter_ratio")] == 1.0
+    assert b2[feature_index("digit_ratio")] == 0.0
+
+    c12 = cell(toy_features, "C12")  # 3.14
+    assert c12[feature_index("has_decimal_point")] == 1
+    assert c12[feature_index("digit_ratio")] == 3 / 4
+
+    g12 = cell(toy_features, "G12")  # "12.5%"
+    assert g12[feature_index("has_percent_symbol")] == 1
+    assert g12[feature_index("has_decimal_point")] == 1
+
+
+def test_number_format_templates(toy_features):
+    b12 = cell(toy_features, "B12")  # 0.00%
+    assert b12[feature_index("numeric_format")] == 1
+    assert b12[feature_index("date_format")] == 0
+    assert 0 < b12[feature_index("format_length")] < 1
+
+    d12 = cell(toy_features, "D12")  # yyyy-mm-dd
+    assert d12[feature_index("date_format")] == 1
+    assert d12[feature_index("time_format")] == 0
+
+    e12 = cell(toy_features, "E12")  # hh:mm
+    assert e12[feature_index("time_format")] == 1
+    assert e12[feature_index("date_format")] == 0
+
+    b2 = cell(toy_features, "B2")  # General
+    assert b2[feature_index("numeric_format")] == 0
+    assert b2[feature_index("format_length")] == 0
+
+
+def test_merge_direction_channels(toy_features):
+    b14 = cell(toy_features, "B14")  # B14:D14 — wide only
+    assert b14[feature_index("merged_horizontal")] == 1
+    assert b14[feature_index("merged_vertical")] == 0
+
+    f14 = cell(toy_features, "F14")  # F14:F16 — tall only
+    assert f14[feature_index("merged_horizontal")] == 0
+    assert f14[feature_index("merged_vertical")] == 1
+
+    f2 = cell(toy_features, "F2")  # F2:G3 — both
+    assert f2[feature_index("merged_horizontal")] == 1
+    assert f2[feature_index("merged_vertical")] == 1
+
+
+def test_color_channels(toy_features):
+    b2 = cell(toy_features, "B2")  # yellow fill, default font color
+    assert b2[feature_index("non_default_fill_color")] == 1
+    assert b2[feature_index("non_default_font_color")] == 0
+
+    f12 = cell(toy_features, "F12")  # red font, no fill
+    assert f12[feature_index("non_default_font_color")] == 1
+    assert f12[feature_index("non_default_fill_color")] == 0
+
+    e4 = cell(toy_features, "E4")  # untouched
+    assert e4[feature_index("non_default_fill_color")] == 0
+    assert e4[feature_index("non_default_font_color")] == 0
+
+
+def test_date_format_not_fooled_by_color_section():
+    """'[Red]' contains 'd' — the format classifier must strip sections."""
+    from excel_table_cnn.data.features import format_features
+
+    numeric, date, time, _ = format_features("#,##0_);[Red](#,##0)")
+    assert numeric == 1 and date == 0 and time == 0

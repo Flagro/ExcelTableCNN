@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+from excel_table_cnn.data.features import NUM_FEATURES
 from excel_table_cnn.model.detector import build_model
 from excel_table_cnn.training.dataset import SpreadsheetDataset
 from excel_table_cnn.training.train import LOSS_KEYS, seed_everything
@@ -15,10 +16,24 @@ def sample_batch():
 
 
 def test_model_constructs_with_arbitrary_channels():
-    for channels in (17, 20):
-        model = build_model(in_channels=channels)
+    from excel_table_cnn.model.grid_context import NUM_DERIVED_CHANNELS
+
+    for channels in (NUM_FEATURES, 20):
+        model = build_model(in_channels=channels)  # grid context on by default
         assert model.in_channels == channels
-        assert model.backbone.body[0].in_channels == channels
+        assert model.backbone.body[0].in_channels == channels + NUM_DERIVED_CHANNELS
+
+    plain = build_model(in_channels=NUM_FEATURES, use_grid_context=False)
+    assert plain.backbone.body[0].in_channels == NUM_FEATURES
+
+
+def test_architecture_flags_round_trip():
+    model = build_model(in_channels=NUM_FEATURES, use_pbr=False, use_grid_context=False)
+    assert model.config == {"use_pbr": False, "pbr_k": 7, "use_grid_context": False}
+    assert model.pbr is None
+
+    full = build_model(in_channels=NUM_FEATURES)
+    assert full.config["use_pbr"] is True and full.config["use_grid_context"] is True
 
 
 def test_wrong_channel_input_raises(sample_batch):
@@ -34,7 +49,7 @@ def test_wrong_channel_input_raises(sample_batch):
 def test_training_forward_returns_all_loss_components(sample_batch):
     seed_everything(0)
     images, targets = sample_batch
-    model = build_model(in_channels=17)
+    model = build_model(in_channels=NUM_FEATURES)
     model.train()
     loss_dict = model(images, targets)
 
@@ -52,7 +67,7 @@ def test_training_forward_returns_all_loss_components(sample_batch):
 def test_eval_forward_returns_detection_dicts(sample_batch):
     seed_everything(0)
     images, _ = sample_batch
-    model = build_model(in_channels=17, box_score_thresh=0.0)
+    model = build_model(in_channels=NUM_FEATURES, box_score_thresh=0.0)
     model.eval()
     with torch.no_grad():
         outputs = model(images)
@@ -75,7 +90,7 @@ def test_degenerate_target_rejected_by_torchvision():
         "boxes": torch.tensor([[3.0, 5.0, 3.0, 21.0]]),  # zero width
         "labels": torch.ones((1,), dtype=torch.int64),
     }
-    model = build_model(in_channels=17)
+    model = build_model(in_channels=NUM_FEATURES)
     model.train()
     with pytest.raises(Exception):
         model([tensor], [bad_target])

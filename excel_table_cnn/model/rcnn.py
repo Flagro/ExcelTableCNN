@@ -13,8 +13,13 @@ from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import MultiScaleRoIAlign
 
-DEFAULT_ANCHOR_SIZES = ((4, 8, 16, 32, 64, 128, 256),)
-DEFAULT_ASPECT_RATIOS = ((0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 10.0),)
+# Tuned on the 2,613 annotated TableSense/VEnron2 ground-truth boxes via
+# excel_table_cnn.data.census (2026-07): width p50=8 p95=31; height p50=21
+# p95=167; h/w ratio p50=2.5 p95=26 — spreadsheet tables are tall. This
+# 8x9 lattice covers 99.5% of GT boxes at IoU>=0.5 and 71.3% at IoU>=0.7
+# (previous 7x7 lattice with ratios capped at 10: 93.5% / 45.2%).
+DEFAULT_ANCHOR_SIZES = ((3, 5, 8, 13, 21, 34, 64, 128),)
+DEFAULT_ASPECT_RATIOS = ((0.15, 0.35, 0.7, 1.4, 2.8, 5.5, 11.0, 22.0, 45.0),)
 
 
 class SkipTransform(GeneralizedRCNNTransform):
@@ -38,8 +43,9 @@ class CustomFasterRCNN(FasterRCNN):
         box_score_thresh: float = 0.5,
     ):
         anchor_generator = AnchorGenerator(sizes=anchor_sizes, aspect_ratios=aspect_ratios)
+        # 14x14 pooling per the paper — finer boundary evidence per RoI.
         roi_pooler = MultiScaleRoIAlign(
-            featmap_names=["0"], output_size=7, sampling_ratio=2
+            featmap_names=["0"], output_size=14, sampling_ratio=2
         )
         super().__init__(
             backbone=backbone,

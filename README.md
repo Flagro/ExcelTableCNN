@@ -26,22 +26,38 @@ useful detections you currently need to train first — see
 ## How it works
 
 1. **Featurization** (`excel_table_cnn/data/features.py`): every cell of a
-   sheet becomes a 17-dimensional binary feature vector — emptiness, string
-   content, merge membership, bold/italic font, the four borders, fill,
-   horizontal alignment (any/left/right/center), wrapped text, indentation,
-   and formula presence. A sheet becomes an `H×W×17` tensor at cell
-   resolution. Trailing all-default rows/columns are trimmed and the used
-   range is capped (default `2048×512`) to survive sheets with stray
-   formatting.
+   sheet becomes a 30-dimensional feature vector following the paper's
+   scheme — emptiness, string content and statistics (length, digit/letter
+   ratios, `%`/decimal presence), number-format template classification
+   (numeric/date/time), merge membership and direction, bold/italic font,
+   the four borders, fill and non-default fill/font colors, alignment,
+   wrapped text, indentation, and formula presence. A sheet becomes an
+   `H×W×30` tensor at cell resolution. Trailing all-default rows/columns are
+   trimmed and the used range is capped (default `2048×512`) to survive
+   sheets with stray formatting.
 2. **Detection** (`excel_table_cnn/model/`): a stride-1 fully convolutional
    backbone (no pooling — cell-level resolution is preserved, as in the
    paper) feeds a torchvision Faster R-CNN with anchors sized in cell units
+   — the anchor lattice is tuned on the annotated corpus's box-shape census
+   (spreadsheet tables are tall: median height/width ratio 2.5, p95 = 26) —
    and a transform that skips image-style resizing/normalization.
-3. **Boxes ↔ ranges** (`excel_table_cnn/training/dataset.py`): boxes use a
+3. **Grid-context backbone** (`excel_table_cnn/model/grid_context.py`) —
+   *this project's own addition over TableSense*: table boundaries are
+   global row/column events, so the backbone (a) receives row/column
+   fill-density and coordinate priors as derived channels, (b) uses dilated
+   convolutions to span typical table heights, and (c) runs an axial
+   strip-pooling block that gives every cell a learned summary of its entire
+   row and column.
+4. **PBR boundary snapping** (`excel_table_cnn/model/pbr.py`): the paper's
+   precise-bounding-box-regression idea, discretized — for each detected
+   edge, a head reads a ±7-cell feature band around it and *classifies* the
+   integer offset to the true boundary, directly optimizing exact-boundary
+   (EoB-0) accuracy. Trained by recovering jittered ground-truth boxes.
+5. **Boxes ↔ ranges** (`excel_table_cnn/training/dataset.py`): boxes use a
    half-open cell convention — `"A1:C3"` ↔ `[0, 0, 3, 3]` — so even a
    single-cell table has positive area. `box_to_range()` converts predictions
    back to Excel ranges.
-4. **Evaluation** (`excel_table_cnn/evaluation/`): the paper's
+6. **Evaluation** (`excel_table_cnn/evaluation/`): the paper's
    Error-of-Boundary metric. EoB of a detection is the maximum absolute
    boundary deviation in cells; a detection counts as correct at EoB-0
    (exact) or EoB-2 (≤ 2 cells off). This is far stricter than IoU and is
@@ -57,13 +73,16 @@ excel_table_cnn/
     loader.py            # corpus download (VEnron2 etc. from figshare)
     markup.py            # TableSense table-range annotations (O-UDA licensed)
     workbook.py          # format dispatch: .xlsx/.xlsm (openpyxl), .xls (xlrd)
-    features.py          # cell featurization -> (H, W, 17) tensors (openpyxl)
+    features.py          # cell featurization -> (H, W, 30) tensors (openpyxl)
     features_xls.py      # same channels for legacy .xls via xlrd (no LibreOffice)
     converter.py         # optional .xlsb/.xls -> .xlsx via headless LibreOffice
+    census.py            # GT box-shape stats + anchor-lattice coverage
     pipeline.py          # end-to-end dataset build with on-disk tensor caching
   model/
     backbone.py          # stride-1 FCN backbone (GroupNorm; batch size is 1)
-    rcnn.py              # customized torchvision Faster R-CNN
+    grid_context.py      # NOVEL: row/col priors + axial strip pooling
+    pbr.py               # PBR boundary snapping (per-edge offset classification)
+    rcnn.py              # customized torchvision Faster R-CNN, corpus-tuned anchors
     detector.py          # TableDetectionModel + build_model()
   training/
     dataset.py           # box convention, SpreadsheetDataset, validation
@@ -256,21 +275,23 @@ The suite covers featurization for both backends (every channel asserted
 against crafted .xlsx *and* .xls workbooks, plus a channel-parity test
 between them), the box convention (including the degenerate
 single-cell/column regressions), dataset validation, model construction and
-loss components, device resolution, the EoB metric, the evaluation harness,
-the feature cache, the training loop, and inference output. The slow overfit
-test is the project's core gate: the model must overfit a single synthetic
-sheet — loss halves and the top detection lands within EoB ≤ 1 — proving the
-whole pipeline can learn. CI runs both jobs on every push.
+loss components, the PBR head (including a module-level "learns to snap
+edges" test), the grid-context blocks, the box census, device resolution,
+the EoB metric, the evaluation harness, the feature cache, the training
+loop, and inference output. The slow overfit test is the project's core
+gate: the model must overfit a single synthetic sheet and reproduce its
+table at **EoB-0 (cell-exact)** — proving the whole pipeline, PBR snapping
+included, can learn. CI runs both jobs on every push.
 
 ## Roadmap
 
-- **Done:** correct data pipeline (featurization, box convention, caching),
-  torchvision-based detector, per-component training diagnostics, EoB
-  evaluation, test suite with the overfit gate.
-- **Next — accuracy:** the paper's full 20-feature scheme (string statistics,
-  data-format templates, colors, merge direction), anchor tuning from the
-  corpus box distribution, augmentation, and the paper's PBR
-  (precise-bounding-box-regression) head for cell-exact boundaries.
+- **Done:** correct data pipeline (30-channel featurization, box convention,
+  caching), torchvision-based detector with corpus-tuned anchors, PBR
+  boundary snapping, the grid-context backbone, per-component training
+  diagnostics, EoB evaluation, test suite with the EoB-0 overfit gate.
+- **Next — accuracy:** train on the full annotation set on GPU,
+  augmentation, categorical color encoding, iterative PBR refinement,
+  segmentation branch.
 - **Then — release:** published pre-trained weights + model card, PyPI
   package.
 

@@ -1,6 +1,8 @@
 """Shared fixtures: a crafted .xlsx workbook with known cell features, and a
 synthetic tensor sample factory for model tests that don't need Excel I/O."""
 
+import datetime
+
 import pytest
 import torch
 from openpyxl import Workbook
@@ -58,6 +60,22 @@ def toy_workbook_path(tmp_path):
     ws["G10"] = "right"
     ws["G10"].alignment = Alignment(horizontal="right")
 
+    # v2 feature cells: formats, colors, merge directions, text stats.
+    ws["B12"] = 0.125
+    ws["B12"].number_format = "0.00%"  # numeric (percent) format
+    ws["C12"] = 3.14  # decimal point in value text
+    ws["D12"] = datetime.date(2001, 3, 14)
+    ws["D12"].number_format = "yyyy-mm-dd"
+    ws["E12"] = datetime.time(9, 30)
+    ws["E12"].number_format = "hh:mm"
+    ws["F12"] = "red text"
+    ws["F12"].font = Font(color="FFFF0000")
+    ws["G12"] = "12.5%"  # percent symbol in value text
+    ws["B14"] = "wide merge"
+    ws.merge_cells("B14:D14")
+    ws["F14"] = "tall merge"
+    ws.merge_cells("F14:F16")
+
     path = tmp_path / "toy.xlsx"
     wb.save(path)
     wb.close()
@@ -94,6 +112,17 @@ def toy_xls_path(tmp_path):
     ws.write(7, 6, "indented", xlwt.easyxf("align: indent 1"))  # G8
     ws.write(9, 5, "left", xlwt.easyxf("align: horiz left"))  # F10
     ws.write(9, 6, "right", xlwt.easyxf("align: horiz right"))  # G10
+
+    # v2 feature cells, mirroring the xlsx fixture.
+    ws.write(11, 1, 0.125, xlwt.easyxf(num_format_str="0.00%"))  # B12
+    ws.write(11, 2, 3.14)  # C12
+    ws.write(11, 3, datetime.date(2001, 3, 14),
+             xlwt.easyxf(num_format_str="YYYY-MM-DD"))  # D12
+    ws.write(11, 4, datetime.time(9, 30), xlwt.easyxf(num_format_str="hh:mm"))  # E12
+    ws.write(11, 5, "red text", xlwt.easyxf("font: colour red"))  # F12
+    ws.write(11, 6, "12.5%")  # G12
+    ws.write_merge(13, 13, 1, 3, "wide merge")  # B14:D14
+    ws.write_merge(13, 15, 5, 5, "tall merge")  # F14:F16
 
     path = tmp_path / "toy.xls"
     wb.save(str(path))
