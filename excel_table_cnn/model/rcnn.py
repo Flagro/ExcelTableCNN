@@ -12,6 +12,7 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
 from torchvision.ops import MultiScaleRoIAlign
+from torchvision.ops.poolers import initLevelMapper
 
 # Tuned on the 2,613 annotated VEnron2 ground-truth boxes via
 # excel_table_cnn.data.census (2026-07): width p50=8 p95=31; height p50=21
@@ -47,6 +48,17 @@ class CustomFasterRCNN(FasterRCNN):
         roi_pooler = MultiScaleRoIAlign(
             featmap_names=["0"], output_size=14, sampling_ratio=2
         )
+        # The backbone is stride 1, so the feature map is cell-aligned with the
+        # input and the RoI scale is exactly 1. Pin it: left unset, torchvision
+        # infers the scale from the FIRST image the pooler sees — padded
+        # feature height over unpadded image height, rounded to a power of
+        # two — and caches it for the life of the module. A first sheet short
+        # enough (e.g. height <= 22, padded to 32) rounds that to 2, silently
+        # shifting every subsequent RoI read. Symptom: two models with
+        # bitwise-identical weights disagree because they saw different first
+        # sheets — observed as "the reloaded checkpoint performs worse".
+        roi_pooler.scales = [1.0]
+        roi_pooler.map_levels = initLevelMapper(0, 0)
         super().__init__(
             backbone=backbone,
             num_classes=num_classes,
