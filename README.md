@@ -271,9 +271,36 @@ Three honest takeaways: the paper's capacity levers alone *regressed* at
 this tiny data scale (they were designed against 10,220 training sheets);
 PBR both unlocked exact boundaries and repaired the regression; and the
 grid-context backbone — this project's own component — delivered the
-largest single jump, halving false positives (29 → 16). Expect all rows to
-rise substantially with a full-corpus GPU run; the paper's reference is
-EoB-2 91.3% / 86.5% on 25× more training data.
+largest single jump, halving false positives (29 → 16).
+
+**Full-corpus run** (all 1,288 training sheets, 160 epochs, seed 42, default
+caps, single T4 GPU; evaluated on the full held-out 197-sheet / 342-table
+split at threshold 0.5, RoI scale pinned to 1.0 per #8): **EoB-0 48.2% /
+47.7%, EoB-2 67.3% / 66.5%** (recall / precision) — the substantial rise the
+ablation predicted for a full-corpus run. The reloaded checkpoint reproduces
+these numbers exactly; the ablation rows above predate the #8 fix. For
+reference, the TableSense paper reports EoB-2 91.3% / 86.5% on 25× more
+hand-labeled sheets.
+
+### Pretrained weights
+
+The full-corpus checkpoint above is published on the Hugging Face Hub at
+[`flagro/exceltablecnn-venron2`](https://huggingface.co/flagro/exceltablecnn-venron2)
+(MIT, ~201 MB). Detect tables without training:
+
+```bash
+huggingface-cli download flagro/exceltablecnn-venron2 final.pt --local-dir .
+excel-table-cnn-detect report.xls --weights final.pt
+```
+
+Or fetch it in Python:
+
+```python
+from huggingface_hub import hf_hub_download
+from excel_table_cnn import load_checkpoint
+
+model = load_checkpoint(hf_hub_download("flagro/exceltablecnn-venron2", "final.pt"))
+```
 
 ## Testing
 
